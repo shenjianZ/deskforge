@@ -1,0 +1,63 @@
+[package]
+name = "deskforge"
+version = "0.1.0"
+description = "DeskForge desktop utility suite"
+authors = ["you"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "tauri_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.4", features = [] }
+
+[dependencies]
+tauri = { version = "2.4", features = [] }
+tauri-plugin-opener = "2.5"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+sysinfo = "0.30"
+qrcode = "0.14"
+image = "0.25"
+base64 = "0.22"
+
+# HTML 处理相关依赖
+markup_fmt = "0.18"
+minify-html = "0.15"
+html5ever = "0.27"
+
+# XML 处理相关依赖（专业解析库）
+roxmltree = "0.20"
+quick-xml = { version = "0.37", features = ["serialize"] }
+
+# JavaScript/TypeScript - 暂时保留通用格式化
+# (SWC/deno_ast 有依赖兼容性问题，跳过)
+
+# CSS 处理相关依赖
+lightningcss = "1.0.0-alpha.50"
+
+# Rust 处理相关依赖
+syn = { version = "2", features = ["full", "extra-traits"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_UI_HiDpi",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_System_StationsAndDesktops",
+    "Win32_System_SystemInformation",
+    "Win32_Storage_FileSystem",
+] }
+wmi = "0.14"
+serde_derive = "1.0"
+

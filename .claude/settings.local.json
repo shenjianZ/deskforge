@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cargo check:*)",
+      "Bash(pnpm build:*)",
+      "Bash(tree:*)",
+      "Bash(pnpm add:*)",
+      "Bash(cargo search:*)",
+      "Bash(cargo test:*)",
+      "Bash(pnpm list:*)",
+      "WebSearch",
+      "Bash(cat:*)"
+    ]
+  }
+}

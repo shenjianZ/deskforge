@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>取色遮罩</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        width: 100vw;
+        height: 100vh;
+        background-color: transparent;
+        cursor: crosshair; /* 关键：CSS 十字光标 */
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      /* 添加一个极其透明的背景，确保能捕获鼠标事件 */
+      #overlay {
+        width: 100%;
+        height: 100%;
+        /* 保持完全透明，避免影响底层颜色的合成结果 */
+        background-color: transparent;
+        position: relative;
+      }
+
+      #magnifier {
+        position: fixed;
+        pointer-events: none;
+        display: block;
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        border-radius: 14px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        background: rgba(20, 20, 20, 0.75);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 10px;
+        width: 260px;
+        height: 300px;
+        z-index: 9999;
+      }
+
+      #mag-canvas {
+        width: 240px;
+        height: 240px;
+        border-radius: 10px;
+        display: block;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      #mag-info {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        color: rgba(255, 255, 255, 0.92);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+          "Courier New", monospace;
+        font-size: 13px;
+      }
+
+      #mag-swatch {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="overlay"></div>
+    <div id="magnifier">
+      <canvas id="mag-canvas" width="240" height="240"></canvas>
+      <div id="mag-info">
+        <div id="mag-hex">#------</div>
+        <div id="mag-swatch"></div>
+      </div>
+    </div>
+
+    <!--
+      注意：此页面是 Vite 的独立入口，会被打包到 dist/picker.html。
+      因此可以直接使用 @tauri-apps/api 的 ESM 导入。
+    -->
+    <script type="module">
+      import { invoke } from "@tauri-apps/api/core";
+      import { emit } from "@tauri-apps/api/event";
+
+      const overlay = document.getElementById("overlay");
+      const magnifier = document.getElementById("magnifier");
+      const magCanvas = document.getElementById("mag-canvas");
+      const magHex = document.getElementById("mag-hex");
+      const magSwatch = document.getElementById("mag-swatch");
+      const magCtx = magCanvas.getContext("2d", { willReadFrequently: false });
+      const tmpCanvas = document.createElement("canvas");
+      const tmpCtx = tmpCanvas.getContext("2d");
+      // 初始隐藏到屏幕外，避免一开始挡住视线
+      magnifier.style.transform = "translate(-9999px, -9999px)";
+
+      const CAPTURE_SIZE = 21; // 必须是奇数，中心点用于取色
+      const SCALE = 10; // 放大倍率（21*10=210，canvas 240 留边）
+      const DRAW_SIZE = CAPTURE_SIZE * SCALE;
+      const OFFSET_X = 26;
+      const OFFSET_Y = 26;
+
+      let lastClientX = 0;
+      let lastClientY = 0;
+      let lastScreenX = 0;
+      let lastScreenY = 0;
+      let pending = false;
+      let lastCaptureAt = 0;
+
+      function clamp(v, min, max) {
+        return Math.max(min, Math.min(max, v));
+      }
+
+      function positionMagnifier(clientX, clientY) {
+        const w = magnifier.offsetWidth || 260;
+        const h = magnifier.offsetHeight || 300;
+        const maxX = window.innerWidth - w - 8;
+        const maxY = window.innerHeight - h - 8;
+
+        // 放到鼠标右下角，避免把被采样区域遮住（防止递归镜像）
+        const x = clamp(clientX + OFFSET_X, 8, Math.max(8, maxX));
+        const y = clamp(clientY + OFFSET_Y, 8, Math.max(8, maxY));
+        magnifier.style.transform = `translate(${x}px, ${y}px)`;
+      }
+
+      async function captureAndRender() {
+        pending = false;
+        if (!magCtx || !tmpCtx) return;
+
+        const now = performance.now();
+        // 节流：最多 30 FPS
+        if (now - lastCaptureAt < 33) return;
+        lastCaptureAt = now;
+
+        const dpr = window.devicePixelRatio || 1;
+        const px = Math.round(lastScreenX * dpr);
+        const py = Math.round(lastScreenY * dpr);
+        const half = Math.floor(CAPTURE_SIZE / 2);
+
+        try {
+          const res = await invoke("capture_screen_region_rgba", {
+            x: px - half,
+            y: py - half,
+            width: CAPTURE_SIZE,
+            height: CAPTURE_SIZE,
+          });
+
+          // res.data 是 RGBA Uint8 数组（通过 JSON 传输会变成 number[]）
+          const u8 = new Uint8ClampedArray(res.data);
+          const imageData = new ImageData(u8, res.width, res.height);
+
+          // 先画到临时 canvas（原尺寸），再按像素风格放大（避免每帧创建对象）
+          tmpCanvas.width = res.width;
+          tmpCanvas.height = res.height;
+          tmpCtx.putImageData(imageData, 0, 0);
+
+          magCtx.clearRect(0, 0, magCanvas.width, magCanvas.height);
+          magCtx.imageSmoothingEnabled = false;
+
+          // 居中绘制
+          const dx = Math.floor((magCanvas.width - DRAW_SIZE) / 2);
+          const dy = Math.floor((magCanvas.height - DRAW_SIZE) / 2);
+          magCtx.drawImage(tmpCanvas, dx, dy, DRAW_SIZE, DRAW_SIZE);
+
+          // 网格线（轻微）
+          magCtx.strokeStyle = "rgba(255,255,255,0.08)";
+          magCtx.lineWidth = 1;
+          for (let i = 0; i <= CAPTURE_SIZE; i++) {
+            const gx = dx + i * SCALE + 0.5;
+            const gy = dy + i * SCALE + 0.5;
+            magCtx.beginPath();
+            magCtx.moveTo(gx, dy);
+            magCtx.lineTo(gx, dy + DRAW_SIZE);
+            magCtx.stroke();
+            magCtx.beginPath();
+            magCtx.moveTo(dx, gy);
+            magCtx.lineTo(dx + DRAW_SIZE, gy);
+            magCtx.stroke();
+          }
+
+          // 中心十字
+          const cx = dx + half * SCALE;
+          const cy = dy + half * SCALE;
+          magCtx.strokeStyle = "rgba(255,255,255,0.9)";
+          magCtx.lineWidth = 2;
+          magCtx.strokeRect(cx, cy, SCALE, SCALE);
+
+          // 更新颜色信息
+          magHex.textContent = res.center_hex;
+          magSwatch.style.backgroundColor = res.center_hex;
+        } catch (e) {
+          // 静默失败，避免刷屏
+        }
+      }
+
+      overlay.addEventListener("mousemove", (e) => {
+        lastClientX = e.clientX;
+        lastClientY = e.clientY;
+        lastScreenX = e.screenX;
+        lastScreenY = e.screenY;
+
+        positionMagnifier(lastClientX, lastClientY);
+
+        if (!pending) {
+          pending = true;
+          requestAnimationFrame(captureAndRender);
+        }
+      });
+
+      overlay.addEventListener("click", async (e) => {
+        try {
+          // screenX/screenY 通常是 CSS 像素；后端 GetPixel 需要物理像素
+          const dpr = window.devicePixelRatio || 1;
+          const x = Math.round(e.screenX * dpr);
+          const y = Math.round(e.screenY * dpr);
+
+          // 取色前先隐藏遮罩窗口，确保拿到“最上层应用”的真实颜色
+          const color = await invoke("pick_color_at_point_topmost", {
+            x,
+            y,
+          });
+
+          await emit("color-picked", color);
+          await invoke("close_picker_window");
+        } catch (error) {
+          console.error("取色失败:", error);
+          await invoke("close_picker_window");
+        }
+      });
+
+      document.addEventListener("keydown", async (e) => {
+        if (e.key === "Escape") {
+          try {
+            await invoke("close_picker_window");
+            await emit("color-picker-cancelled");
+          } catch (error) {
+            console.error("关闭窗口失败:", error);
+          }
+        }
+      });
+
+      overlay.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+      });
+    </script>
+  </body>
+</html>
+
