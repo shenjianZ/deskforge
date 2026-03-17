@@ -31,7 +31,7 @@ impl SystemInfoService {
 
         #[cfg(not(windows))]
         {
-            let accessor = crate::platforms::windows::system_info_impl::DummySystemInfo;
+            let accessor = crate::platforms::system_info::DummySystemInfo;
             accessor.get_system_info()
         }
     }

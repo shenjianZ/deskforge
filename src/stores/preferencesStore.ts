@@ -9,11 +9,13 @@ interface PreferencesState {
   autoCollapseInput: boolean;
   defaultJsonResultView: JsonResultView;
   wrapLongLines: boolean;
+  launchOnStartup: boolean;
   setDefaultIndent: (value: 2 | 4) => void;
   setDefaultCodeIndent: (value: 2 | 4 | 8) => void;
   setAutoCollapseInput: (value: boolean) => void;
   setDefaultJsonResultView: (value: JsonResultView) => void;
   setWrapLongLines: (value: boolean) => void;
+  setLaunchOnStartup: (value: boolean) => void;
   reset: () => void;
 }
 
@@ -23,6 +25,7 @@ const defaultPreferences = {
   autoCollapseInput: true,
   defaultJsonResultView: 'tree' as JsonResultView,
   wrapLongLines: false,
+  launchOnStartup: false,
 };
 
 export const usePreferencesStore = create<PreferencesState>()(
@@ -34,6 +37,7 @@ export const usePreferencesStore = create<PreferencesState>()(
       setAutoCollapseInput: (value) => set({ autoCollapseInput: value }),
       setDefaultJsonResultView: (value) => set({ defaultJsonResultView: value }),
       setWrapLongLines: (value) => set({ wrapLongLines: value }),
+      setLaunchOnStartup: (value) => set({ launchOnStartup: value }),
       reset: () => set(defaultPreferences),
     }),
     {

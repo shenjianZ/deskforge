@@ -3,12 +3,16 @@
 //! 提供屏幕像素颜色获取功能
 
 use crate::error::{AppError, AppResult};
+
+#[cfg(windows)]
 use windows::Win32::Foundation::HWND;
+#[cfg(windows)]
 use windows::Win32::Graphics::Gdi::{
     BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, GetDC, GetDIBits,
     GetPixel, ReleaseDC, SelectObject, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS,
     HBITMAP, HGDIOBJ, SRCCOPY,
 };
+#[cfg(windows)]
 use windows::Win32::UI::WindowsAndMessaging::{
     GetSystemMetrics, SM_CXVIRTUALSCREEN, SM_CYVIRTUALSCREEN, SM_XVIRTUALSCREEN, SM_YVIRTUALSCREEN,
 };
@@ -17,6 +21,7 @@ use windows::Win32::UI::WindowsAndMessaging::{
 pub struct WindowsScreen;
 
 impl WindowsScreen {
+    #[cfg(windows)]
     /// 获取屏幕指定像素的 RGB 颜色
     ///
     /// # 参数
@@ -58,9 +63,17 @@ impl WindowsScreen {
         }
     }
 
+    #[cfg(not(windows))]
+    pub fn get_pixel_color(_x: i32, _y: i32) -> AppResult<(u8, u8, u8)> {
+        Err(AppError::PlatformNotSupported(
+            "当前平台暂不支持屏幕取色".to_string(),
+        ))
+    }
+
     /// 捕获屏幕指定区域像素（RGBA，行优先，左上角开始）
     ///
     /// 该函数用于前端放大镜实时预览。
+    #[cfg(windows)]
     pub fn capture_region_rgba(
         x: i32,
         y: i32,
@@ -173,5 +186,17 @@ impl WindowsScreen {
 
             Ok(bgra)
         }
+    }
+
+    #[cfg(not(windows))]
+    pub fn capture_region_rgba(
+        _x: i32,
+        _y: i32,
+        _width: i32,
+        _height: i32,
+    ) -> AppResult<Vec<u8>> {
+        Err(AppError::PlatformNotSupported(
+            "当前平台暂不支持屏幕区域捕获".to_string(),
+        ))
     }
 }

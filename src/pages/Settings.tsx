@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,13 +15,61 @@ export default function Settings() {
     autoCollapseInput,
     defaultJsonResultView,
     wrapLongLines,
+    launchOnStartup,
     setDefaultIndent,
     setDefaultCodeIndent,
     setAutoCollapseInput,
     setDefaultJsonResultView,
     setWrapLongLines,
+    setLaunchOnStartup,
     reset,
   } = usePreferencesStore();
+  const [isAutostartReady, setIsAutostartReady] = useState(false);
+  const [autostartError, setAutostartError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const syncAutostartState = async () => {
+      try {
+        const enabled = await invoke<boolean>('plugin:autostart|is_enabled');
+        if (!cancelled) {
+          setLaunchOnStartup(enabled);
+          setAutostartError(null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setAutostartError(error instanceof Error ? error.message : '读取开机自启状态失败');
+        }
+      } finally {
+        if (!cancelled) {
+          setIsAutostartReady(true);
+        }
+      }
+    };
+
+    void syncAutostartState();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [setLaunchOnStartup]);
+
+  const handleAutostartToggle = async () => {
+    const nextValue = !launchOnStartup;
+
+    try {
+      setAutostartError(null);
+      if (nextValue) {
+        await invoke('plugin:autostart|enable');
+      } else {
+        await invoke('plugin:autostart|disable');
+      }
+      setLaunchOnStartup(nextValue);
+    } catch (error) {
+      setAutostartError(error instanceof Error ? error.message : '更新开机自启状态失败');
+    }
+  };
 
   return (
     <PageSection className="space-y-6">
@@ -101,7 +151,18 @@ export default function Settings() {
             >
               结果长行自动换行：{wrapLongLines ? '开启' : '关闭'}
             </Button>
+            <Button
+              variant={launchOnStartup ? 'default' : 'outline'}
+              onClick={() => void handleAutostartToggle()}
+              disabled={!isAutostartReady}
+            >
+              开机自启：{isAutostartReady ? (launchOnStartup ? '开启' : '关闭') : '读取中'}
+            </Button>
           </div>
+
+          {autostartError ? (
+            <p className="text-sm text-destructive">{autostartError}</p>
+          ) : null}
 
           <Button variant="outline" className="gap-2" onClick={reset}>
             <RotateCcw className="h-4 w-4" />
