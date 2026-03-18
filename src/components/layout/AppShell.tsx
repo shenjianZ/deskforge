@@ -40,29 +40,19 @@ export function AppShell({ children }: { children: ReactNode }) {
         <WindowChrome />
 
         <header className="sticky top-10 z-30 border-b border-border/50 bg-background/78 backdrop-blur-2xl">
-          <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-            <div className="flex min-w-0 items-center gap-4">
-              <Link to="/" className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/60 bg-[linear-gradient(135deg,rgba(249,115,22,0.16),rgba(14,165,233,0.12))] shadow-sm">
-                  <AppWindow className="h-5 w-5" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[11px] uppercase tracking-[0.32em] text-muted-foreground">DeskForge</div>
-                  <div className="truncate text-base font-semibold">DeskForge</div>
-                </div>
-              </Link>
+          <div className="relative mx-auto flex w-full max-w-[1600px] items-center justify-end gap-4 px-4 py-4 sm:px-6 lg:px-8">
+            <div className="flex-1" />
 
-              <div className="hidden xl:flex xl:items-center xl:gap-2">
-                <Link to="/" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:bg-background hover:text-foreground")}>
-                  首页
-                </Link>
-                <Link to="/search" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/search" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:bg-background hover:text-foreground")}>
-                  搜索
-                </Link>
-                <Link to="/settings" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/settings" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:bg-background hover:text-foreground")}>
-                  设置
-                </Link>
-              </div>
+            <div className="absolute left-1/2 hidden -translate-x-1/2 xl:flex xl:items-center xl:gap-2">
+              <Link to="/" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:bg-background hover:text-foreground")}>
+                首页
+              </Link>
+              <Link to="/search" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/search" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:bg-background hover:text-foreground")}>
+                搜索
+              </Link>
+              <Link to="/settings" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/settings" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:bg-background hover:text-foreground")}>
+                设置
+              </Link>
             </div>
 
             <div className="flex items-center gap-2">
@@ -106,12 +96,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                 const Icon = iconMap[group.icon] ?? AppWindow;
 
                 return (
-                  <section key={group.id} className="rounded-[1.5rem] border border-border/60 bg-background/78 p-4 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
+                  <section key={group.id} className="flex max-h-[360px] flex-col rounded-[1.5rem] border border-border/60 bg-background/78 p-4 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
                     <div className="flex items-center gap-2 text-sm font-medium">
                       <Icon className="h-4 w-4" />
                       {group.name}
                     </div>
-                    <div className="mt-4 space-y-2">
+                    <div className="mt-4 space-y-2 overflow-y-auto pr-1">
                       {group.items.map((item) => {
                         const ItemIcon = iconMap[item.icon] ?? AppWindow;
                         const active = location.pathname === item.route;

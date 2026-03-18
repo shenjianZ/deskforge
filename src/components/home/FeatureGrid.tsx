@@ -22,7 +22,7 @@ export function FeatureGrid({ features }: FeatureGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       {features.map((feature) => (
         <FeatureCard key={feature.id} feature={feature} />
       ))}
