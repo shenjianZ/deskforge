@@ -7,6 +7,7 @@ import { useDebounce } from '@uidotdev/usehooks';
 import { useQrStore } from '@/stores/qrcodeStore';
 import { QrConfigPanel } from './QrConfigPanel';
 import { QrPreview } from './QrPreview';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { PageSection } from '@/components/layout/PageSection';
 
 export function QrCodeGeneratorPage() {
@@ -23,7 +24,8 @@ export function QrCodeGeneratorPage() {
   }, [debouncedConfig, generatePreview]);
 
   return (
-    <PageSection>
+    <PageSection className="space-y-6">
+      <PageHeader title="二维码生成器" backTo="/" />
       <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* 左侧配置面板 */}

@@ -109,11 +109,10 @@ export function FormatterWorkbench({
   const activeViewKey = views.some((view) => view.key === activeView) ? activeView : views[0]?.key ?? 'code';
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       <Card className="border-border/60 bg-card/80 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base">配置选项</CardTitle>
-          <CardDescription>统一的工具工作台配置区</CardDescription>
+          <CardTitle className="text-base">配置</CardTitle>
         </CardHeader>
         <CardContent>{configPanel}</CardContent>
       </Card>
@@ -191,7 +190,7 @@ export function FormatterWorkbench({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <CardTitle className="text-base">格式化结果</CardTitle>
-                <CardDescription>{outputDescription}</CardDescription>
+                {outputDescription ? <CardDescription>{outputDescription}</CardDescription> : null}
               </div>
               <div className="flex items-center gap-2">
                 {outputToolbar}
@@ -249,7 +248,6 @@ export function FormatterWorkbench({
       <Card className="border-border/60 bg-card/80 shadow-sm">
         <CardHeader>
           <CardTitle className="text-base">使用说明</CardTitle>
-          <CardDescription>统一的工作流说明区</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">{helpContent}</CardContent>
       </Card>

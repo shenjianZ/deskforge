@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Button } from '@/components/ui/button';
 import { FormatterWorkbench } from '@/components/features/FormatterWorkbench';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { PageSection } from '@/components/layout/PageSection';
 import { usePreferencesStore } from '@/stores/preferencesStore';
 import type { CodeFormatConfig, CodeFormatResult, CodeValidateResult, CodeLanguage } from '@/types/code';
@@ -109,78 +110,81 @@ export function CodeFormatterPage() {
   }, [config.language]);
 
   return (
-    <PageSection>
-      <FormatterWorkbench
-        inputLabel="输入代码"
-        inputDescription="多语言基础格式化入口，适合快速整理代码片段。"
-        outputLanguage={config.language}
-        outputDescription="输出区统一复用高亮、复制和结果统计。"
-        input={input}
-        onInputChange={setInput}
-        output={output}
-        validation={validation}
-        isProcessing={isProcessing}
-        isInputCollapsed={isInputCollapsed}
-        onInputCollapseChange={setIsInputCollapsed}
-        onPrimaryAction={formatCode}
-        primaryActionLabel="格式化"
-        onClear={clearInput}
-        onLoadExample={loadExample}
-        wrapLongLines={wrapLongLines}
-        configPanel={
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-sm font-medium">语言</span>
-              <div className="flex flex-wrap gap-2">
-                {LANGUAGES.map((language) => (
-                  <Button
-                    key={language.value}
-                    size="sm"
-                    variant={config.language === language.value ? 'default' : 'outline'}
-                    onClick={() => setConfig((prev) => ({ ...prev, language: language.value }))}
-                  >
-                    {language.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-6">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">缩进</span>
-                <div className="flex gap-2">
-                  {[2, 4, 8].map((spaces) => (
+    <PageSection className="space-y-6">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <PageHeader title="代码格式化" backTo="/" />
+        <FormatterWorkbench
+          inputLabel="输入代码"
+          inputDescription="多语言基础格式化入口，适合快速整理代码片段。"
+          outputLanguage={config.language}
+          outputDescription="输出区统一复用高亮、复制和结果统计。"
+          input={input}
+          onInputChange={setInput}
+          output={output}
+          validation={validation}
+          isProcessing={isProcessing}
+          isInputCollapsed={isInputCollapsed}
+          onInputCollapseChange={setIsInputCollapsed}
+          onPrimaryAction={formatCode}
+          primaryActionLabel="格式化"
+          onClear={clearInput}
+          onLoadExample={loadExample}
+          wrapLongLines={wrapLongLines}
+          configPanel={
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-sm font-medium">语言</span>
+                <div className="flex flex-wrap gap-2">
+                  {LANGUAGES.map((language) => (
                     <Button
-                      key={spaces}
+                      key={language.value}
                       size="sm"
-                      variant={config.indent === spaces ? 'default' : 'outline'}
-                      onClick={() => setConfig((prev) => ({ ...prev, indent: spaces }))}
+                      variant={config.language === language.value ? 'default' : 'outline'}
+                      onClick={() => setConfig((prev) => ({ ...prev, language: language.value }))}
                     >
-                      {spaces} 空格
+                      {language.label}
                     </Button>
                   ))}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">Tab</span>
-                <Button
-                  size="sm"
-                  variant={config.useTabs ? 'default' : 'outline'}
-                  onClick={() => setConfig((prev) => ({ ...prev, useTabs: !prev.useTabs }))}
-                >
-                  {config.useTabs ? '开启' : '关闭'}
-                </Button>
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium">缩进</span>
+                  <div className="flex gap-2">
+                    {[2, 4, 8].map((spaces) => (
+                      <Button
+                        key={spaces}
+                        size="sm"
+                        variant={config.indent === spaces ? 'default' : 'outline'}
+                        onClick={() => setConfig((prev) => ({ ...prev, indent: spaces }))}
+                      >
+                        {spaces} 空格
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium">Tab</span>
+                  <Button
+                    size="sm"
+                    variant={config.useTabs ? 'default' : 'outline'}
+                    onClick={() => setConfig((prev) => ({ ...prev, useTabs: !prev.useTabs }))}
+                  >
+                    {config.useTabs ? '开启' : '关闭'}
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        }
-        helpContent={
-          <>
-            <p>1. 选择语言后输入代码，系统按当前语言做基础校验。</p>
-            <p>2. 适用于快速美化片段，不替代各语言的专业 formatter。</p>
-            <p>3. 示例数据会跟随语言切换，方便立即验证格式化效果。</p>
-          </>
-        }
-      />
+          }
+          helpContent={
+            <>
+              <p>1. 选择语言后输入代码，系统按当前语言做基础校验。</p>
+              <p>2. 适用于快速美化片段，不替代各语言的专业 formatter。</p>
+              <p>3. 示例数据会跟随语言切换，方便立即验证格式化效果。</p>
+            </>
+          }
+        />
+      </div>
     </PageSection>
   );
 }

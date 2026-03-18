@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Button } from '@/components/ui/button';
 import { FormatterWorkbench } from '@/components/features/FormatterWorkbench';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { PageSection } from '@/components/layout/PageSection';
 import { usePreferencesStore } from '@/stores/preferencesStore';
 import type { XmlFormatConfig, XmlFormatResult, XmlValidateResult } from '@/types/xml';
@@ -96,68 +97,71 @@ export function XmlFormatterPage() {
   }, []);
 
   return (
-    <PageSection>
-      <FormatterWorkbench
-        inputLabel="输入 XML"
-        inputDescription="适合配置文件、接口报文和结构化数据整理。"
-        outputLanguage="xml"
-        outputDescription="结果区提供高亮、复制与布局聚焦。"
-        input={input}
-        onInputChange={setInput}
-        output={output}
-        validation={validation}
-        isProcessing={isProcessing}
-        isInputCollapsed={isInputCollapsed}
-        onInputCollapseChange={setIsInputCollapsed}
-        onPrimaryAction={formatXml}
-        primaryActionLabel="格式化"
-        onSecondaryAction={compactXml}
-        secondaryActionLabel="压缩"
-        onClear={clearInput}
-        onLoadExample={loadExample}
-        wrapLongLines={wrapLongLines}
-        configPanel={
-          <div className="flex flex-wrap items-center gap-6">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">缩进</span>
-              <div className="flex gap-2">
-                {[2, 4].map((spaces) => (
-                  <Button
-                    key={spaces}
-                    size="sm"
-                    variant={config.indent === spaces ? 'default' : 'outline'}
-                    onClick={() => setConfig((prev) => ({ ...prev, indent: spaces }))}
-                  >
-                    {spaces} 空格
-                  </Button>
-                ))}
+    <PageSection className="space-y-6">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <PageHeader title="XML 格式化" backTo="/" />
+        <FormatterWorkbench
+          inputLabel="输入 XML"
+          inputDescription="适合配置文件、接口报文和结构化数据整理。"
+          outputLanguage="xml"
+          outputDescription="结果区提供高亮、复制与布局聚焦。"
+          input={input}
+          onInputChange={setInput}
+          output={output}
+          validation={validation}
+          isProcessing={isProcessing}
+          isInputCollapsed={isInputCollapsed}
+          onInputCollapseChange={setIsInputCollapsed}
+          onPrimaryAction={formatXml}
+          primaryActionLabel="格式化"
+          onSecondaryAction={compactXml}
+          secondaryActionLabel="压缩"
+          onClear={clearInput}
+          onLoadExample={loadExample}
+          wrapLongLines={wrapLongLines}
+          configPanel={
+            <div className="flex flex-wrap items-center gap-6">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium">缩进</span>
+                <div className="flex gap-2">
+                  {[2, 4].map((spaces) => (
+                    <Button
+                      key={spaces}
+                      size="sm"
+                      variant={config.indent === spaces ? 'default' : 'outline'}
+                      onClick={() => setConfig((prev) => ({ ...prev, indent: spaces }))}
+                    >
+                      {spaces} 空格
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium">模式</span>
+                <div className="flex gap-2">
+                  {(['pretty', 'compact'] as const).map((mode) => (
+                    <Button
+                      key={mode}
+                      size="sm"
+                      variant={config.mode === mode ? 'default' : 'outline'}
+                      onClick={() => setConfig((prev) => ({ ...prev, mode }))}
+                    >
+                      {mode === 'pretty' ? '美化' : '压缩'}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">模式</span>
-              <div className="flex gap-2">
-                {(['pretty', 'compact'] as const).map((mode) => (
-                  <Button
-                    key={mode}
-                    size="sm"
-                    variant={config.mode === mode ? 'default' : 'outline'}
-                    onClick={() => setConfig((prev) => ({ ...prev, mode }))}
-                  >
-                    {mode === 'pretty' ? '美化' : '压缩'}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
-        }
-        helpContent={
-          <>
-            <p>1. 粘贴 XML 后自动校验结构合法性。</p>
-            <p>2. 根据场景选择可读性优先的格式化或传输优先的压缩。</p>
-            <p>3. 输入区可折叠，方便对长报文进行结果比对。</p>
-          </>
-        }
-      />
+          }
+          helpContent={
+            <>
+              <p>1. 粘贴 XML 后自动校验结构合法性。</p>
+              <p>2. 根据场景选择可读性优先的格式化或传输优先的压缩。</p>
+              <p>3. 输入区可折叠，方便对长报文进行结果比对。</p>
+            </>
+          }
+        />
+      </div>
     </PageSection>
   );
 }

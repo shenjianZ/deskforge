@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Button } from '@/components/ui/button';
 import { FormatterWorkbench } from '@/components/features/FormatterWorkbench';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { PageSection } from '@/components/layout/PageSection';
 import { usePreferencesStore } from '@/stores/preferencesStore';
 import type { JsonFormatConfig, JsonFormatResult, JsonValidateResult } from '@/types/json';
@@ -263,119 +264,122 @@ export function JsonFormatterPage() {
   }, []);
 
   return (
-    <PageSection>
-      <FormatterWorkbench
-        inputLabel="输入 JSON"
-        inputDescription="支持格式化、压缩与树结构查看，适合调试接口响应和配置数据。"
-        outputLanguage="json"
-        outputDescription="JSON 结果可在代码视图和树结构视图之间切换。"
-        input={input}
-        onInputChange={setInput}
-        output={output}
-        validation={validation}
-        isProcessing={isProcessing}
-        isInputCollapsed={isInputCollapsed}
-        onInputCollapseChange={setIsInputCollapsed}
-        onPrimaryAction={formatJson}
-        primaryActionLabel="格式化"
-        onSecondaryAction={compactJson}
-        secondaryActionLabel="压缩"
-        onClear={clearInput}
-        onLoadExample={loadExample}
-        defaultOutputView={defaultJsonResultView}
-        wrapLongLines={wrapLongLines}
-        disablePrimaryAction={!validation?.isValid}
-        disableSecondaryAction={!validation?.isValid}
-        outputToolbar={
-          parsedOutput ? (
+    <PageSection className="space-y-6">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <PageHeader title="JSON 格式化" backTo="/" />
+        <FormatterWorkbench
+          inputLabel="输入 JSON"
+          inputDescription="支持格式化、压缩与树结构查看，适合调试接口响应和配置数据。"
+          outputLanguage="json"
+          outputDescription="JSON 结果可在代码视图和树结构视图之间切换。"
+          input={input}
+          onInputChange={setInput}
+          output={output}
+          validation={validation}
+          isProcessing={isProcessing}
+          isInputCollapsed={isInputCollapsed}
+          onInputCollapseChange={setIsInputCollapsed}
+          onPrimaryAction={formatJson}
+          primaryActionLabel="格式化"
+          onSecondaryAction={compactJson}
+          secondaryActionLabel="压缩"
+          onClear={clearInput}
+          onLoadExample={loadExample}
+          defaultOutputView={defaultJsonResultView}
+          wrapLongLines={wrapLongLines}
+          disablePrimaryAction={!validation?.isValid}
+          disableSecondaryAction={!validation?.isValid}
+          outputToolbar={
+            parsedOutput ? (
+              <>
+                <Button size="sm" variant="outline" onClick={expandAll}>
+                  全部展开
+                </Button>
+                <Button size="sm" variant="outline" onClick={collapseAll}>
+                  全部收起
+                </Button>
+              </>
+            ) : null
+          }
+          outputViews={[
+            {
+              key: 'tree',
+              label: '树结构',
+              disabled: !parsedOutput,
+              content: parsedOutput ? (
+                <div className="max-h-[26rem] overflow-auto rounded-2xl border border-border bg-muted/20 py-2">
+                  <JsonTreeNode
+                    label="root"
+                    value={parsedOutput}
+                    path="root"
+                    expandedPaths={expandedPaths}
+                    onToggle={toggleNode}
+                  />
+                </div>
+              ) : (
+                <div className="flex h-52 items-center justify-center rounded-2xl border border-border bg-muted/20 text-sm text-muted-foreground">
+                  当前结果不可解析为 JSON，无法显示树结构。
+                </div>
+              ),
+            },
+            {
+              key: 'code',
+              label: '代码',
+            },
+          ]}
+          configPanel={
+            <div className="flex flex-wrap items-center gap-6">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium">缩进</span>
+                <div className="flex gap-2">
+                  {[2, 4].map((spaces) => (
+                    <Button
+                      key={spaces}
+                      size="sm"
+                      variant={config.indent === spaces ? 'default' : 'outline'}
+                      onClick={() => setConfig((prev) => ({ ...prev, indent: spaces }))}
+                    >
+                      {spaces} 空格
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium">排序 Keys</span>
+                <Button
+                  size="sm"
+                  variant={config.sortKeys ? 'default' : 'outline'}
+                  onClick={() => setConfig((prev) => ({ ...prev, sortKeys: !prev.sortKeys }))}
+                >
+                  {config.sortKeys ? '开启' : '关闭'}
+                </Button>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium">模式</span>
+                <div className="flex gap-2">
+                  {(['pretty', 'compact'] as const).map((mode) => (
+                    <Button
+                      key={mode}
+                      size="sm"
+                      variant={config.mode === mode ? 'default' : 'outline'}
+                      onClick={() => setConfig((prev) => ({ ...prev, mode }))}
+                    >
+                      {mode === 'pretty' ? '美化' : '压缩'}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          }
+          helpContent={
             <>
-              <Button size="sm" variant="outline" onClick={expandAll}>
-                全部展开
-              </Button>
-              <Button size="sm" variant="outline" onClick={collapseAll}>
-                全部收起
-              </Button>
+              <p>1. JSON 输入会实时校验，非法内容不能触发格式化和压缩。</p>
+              <p>2. 结果视图支持代码和树结构切换，树结构默认视图可在设置中配置。</p>
+              <p>3. 可通过“聚焦结果”快速收起输入区，便于查看大对象层级。</p>
             </>
-          ) : null
-        }
-        outputViews={[
-          {
-            key: 'tree',
-            label: '树结构',
-            disabled: !parsedOutput,
-            content: parsedOutput ? (
-              <div className="max-h-[26rem] overflow-auto rounded-2xl border border-border bg-muted/20 py-2">
-                <JsonTreeNode
-                  label="root"
-                  value={parsedOutput}
-                  path="root"
-                  expandedPaths={expandedPaths}
-                  onToggle={toggleNode}
-                />
-              </div>
-            ) : (
-              <div className="flex h-52 items-center justify-center rounded-2xl border border-border bg-muted/20 text-sm text-muted-foreground">
-                当前结果不可解析为 JSON，无法显示树结构。
-              </div>
-            ),
-          },
-          {
-            key: 'code',
-            label: '代码',
-          },
-        ]}
-        configPanel={
-          <div className="flex flex-wrap items-center gap-6">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">缩进</span>
-              <div className="flex gap-2">
-                {[2, 4].map((spaces) => (
-                  <Button
-                    key={spaces}
-                    size="sm"
-                    variant={config.indent === spaces ? 'default' : 'outline'}
-                    onClick={() => setConfig((prev) => ({ ...prev, indent: spaces }))}
-                  >
-                    {spaces} 空格
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">排序 Keys</span>
-              <Button
-                size="sm"
-                variant={config.sortKeys ? 'default' : 'outline'}
-                onClick={() => setConfig((prev) => ({ ...prev, sortKeys: !prev.sortKeys }))}
-              >
-                {config.sortKeys ? '开启' : '关闭'}
-              </Button>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">模式</span>
-              <div className="flex gap-2">
-                {(['pretty', 'compact'] as const).map((mode) => (
-                  <Button
-                    key={mode}
-                    size="sm"
-                    variant={config.mode === mode ? 'default' : 'outline'}
-                    onClick={() => setConfig((prev) => ({ ...prev, mode }))}
-                  >
-                    {mode === 'pretty' ? '美化' : '压缩'}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
-        }
-        helpContent={
-          <>
-            <p>1. JSON 输入会实时校验，非法内容不能触发格式化和压缩。</p>
-            <p>2. 结果视图支持代码和树结构切换，树结构默认视图可在设置中配置。</p>
-            <p>3. 可通过“聚焦结果”快速收起输入区，便于查看大对象层级。</p>
-          </>
-        }
-      />
+          }
+        />
+      </div>
     </PageSection>
   );
 }

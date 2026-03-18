@@ -1,3 +1,4 @@
+import { Search } from "lucide-react";
 import { FeatureCard } from "./FeatureCard";
 import { Feature } from "@/features/types";
 
@@ -8,20 +9,20 @@ interface FeatureGridProps {
 export function FeatureGrid({ features }: FeatureGridProps) {
   if (features.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-          <span className="text-3xl">🔍</span>
+      <div className="flex min-h-[280px] flex-col items-center justify-center rounded-[1.75rem] border border-dashed border-border/70 bg-background/55 px-6 py-16 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted/70">
+          <Search className="h-7 w-7 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-semibold mb-2">没有找到功能</h3>
-        <p className="text-sm text-muted-foreground">
-          尝试切换分类或使用搜索功能
+        <h3 className="mt-5 text-xl font-semibold tracking-tight">没有匹配模块</h3>
+        <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
+          尝试更换搜索词，或者切回更宽泛的分类视图。
         </p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
       {features.map((feature) => (
         <FeatureCard key={feature.id} feature={feature} />
       ))}

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Copy, Check, Droplet, RefreshCw } from 'lucide-react';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { PageSection } from '@/components/layout/PageSection';
 import type { ColorInfo } from '@/types/color';
 
@@ -64,7 +65,9 @@ export function ColorPickerPage() {
   }, []);
 
   return (
-    <PageSection className="max-w-4xl space-y-6">
+    <PageSection className="space-y-6">
+      <div className="mx-auto max-w-7xl space-y-6">
+          <PageHeader title="取色器" backTo="/" />
           {/* 拾色按钮 */}
           <Card className="border-border/60 bg-card/85 shadow-sm">
             <CardContent className="p-6">
@@ -206,6 +209,7 @@ export function ColorPickerPage() {
               <p>5. 点击历史记录中的色块可以快速切换回该颜色</p>
             </CardContent>
           </Card>
+      </div>
     </PageSection>
   );
 }

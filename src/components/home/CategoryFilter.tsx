@@ -1,17 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { categories, type FeatureCategory } from "@/features/data";
 import * as LucideIcons from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const iconMap = LucideIcons as unknown as Record<string, typeof LucideIcons.AppWindow>;
 
 interface CategoryFilterProps {
-  selectedCategory: FeatureCategory | 'all';
-  onCategoryChange: (category: FeatureCategory | 'all') => void;
+  selectedCategory: FeatureCategory | "all";
+  onCategoryChange: (category: FeatureCategory | "all") => void;
 }
 
 export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2">
+    <div className="scrollbar-horizontal flex gap-2 overflow-x-auto pb-1">
       {categories.map((category) => {
         const IconComponent = iconMap[category.icon] || LucideIcons.AppWindow;
         const isSelected = selectedCategory === category.id;
@@ -19,12 +20,17 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
         return (
           <Button
             key={category.id}
-            variant={isSelected ? "default" : "outline"}
+            variant="ghost"
             size="sm"
-            onClick={() => onCategoryChange(category.id as FeatureCategory | 'all')}
-            className="flex-shrink-0"
+            onClick={() => onCategoryChange(category.id as FeatureCategory | "all")}
+            className={cn(
+              "h-10 flex-shrink-0 rounded-full border px-4 text-sm transition",
+              isSelected
+                ? "border-slate-950 bg-slate-950 text-white hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-950 dark:hover:bg-white/90"
+                : "border-border/60 bg-background/75 text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
+            )}
           >
-            <IconComponent className="w-4 h-4 mr-2" />
+            <IconComponent className="mr-2 h-4 w-4" />
             {category.name}
           </Button>
         );

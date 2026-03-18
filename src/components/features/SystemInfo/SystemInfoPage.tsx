@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Monitor, Cpu, HardDrive, Database, Computer, RefreshCw, Clock, Play, Pause, Network, Wifi } from 'lucide-react';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { PageSection } from '@/components/layout/PageSection';
 import type { SystemInfo } from '@/types/system';
 
@@ -123,7 +124,9 @@ export function SystemInfoPage() {
   const formatGB = (value: number) => `${value.toFixed(2)} GB`;
 
   return (
-    <PageSection>
+    <PageSection className="space-y-6">
+      <div className="mx-auto max-w-7xl space-y-6">
+      <PageHeader title="系统信息" backTo="/" />
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-end gap-2">
             <div className="flex items-center gap-2">
@@ -205,7 +208,7 @@ export function SystemInfoPage() {
         )}
 
         {systemInfo && (
-          <div className="max-w-7xl mx-auto">
+          <div>
             {/* 顶部2列：系统、计算机 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {/* 操作系统 */}
@@ -480,6 +483,7 @@ export function SystemInfoPage() {
             </Card>
           </div>
         )}
+      </div>
       </div>
     </PageSection>
   );

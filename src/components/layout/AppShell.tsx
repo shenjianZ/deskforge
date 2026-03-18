@@ -1,103 +1,114 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Search, Settings, PanelLeft, AppWindow } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
-import { useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
-import { implementedFeatures } from '@/features/data';
-import { categories } from '@/features/registry';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { ModeToggle } from '@/components/mode-toggle';
+import { Link, useLocation } from "react-router-dom";
+import { AppWindow, ChevronDown, Command, Search, Settings } from "lucide-react";
+import * as LucideIcons from "lucide-react";
+import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import { implementedFeatures } from "@/features/data";
+import { categories } from "@/features/registry";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/mode-toggle";
 
 const iconMap = LucideIcons as unknown as Record<string, typeof AppWindow>;
 
-const pageMeta: Record<string, { title: string; description: string }> = {
-  '/': {
-    title: 'DeskForge',
-    description: '桌面工具工作台',
-  },
-  '/search': {
-    title: '搜索',
-    description: '快速定位已实现工具',
-  },
-  '/settings': {
-    title: '设置',
-    description: '主题、显示与格式化默认偏好',
-  },
-};
-
 export function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [trayOpen, setTrayOpen] = useState(false);
 
-  const meta = useMemo(() => {
-    const feature = implementedFeatures.find((item) => item.route === location.pathname);
-    if (feature) {
-      return {
-        title: feature.name,
-        description: feature.description,
-      };
-    }
-
-    return pageMeta[location.pathname] ?? pageMeta['/'];
-  }, [location.pathname]);
-
-  const navGroups = categories
-    .filter((category) => category.id !== 'all')
-    .map((category) => ({
-      ...category,
-      items: implementedFeatures.filter((feature) => feature.category === category.id),
-    }))
-    .filter((category) => category.items.length > 0);
+  const navGroups = useMemo(
+    () =>
+      categories
+        .filter((category) => category.id !== "all")
+        .map((category) => ({
+          ...category,
+          items: implementedFeatures.filter((feature) => feature.category === category.id),
+        }))
+        .filter((category) => category.items.length > 0),
+    []
+  );
 
   return (
-    <div className="flex min-h-screen bg-[radial-gradient(circle_at_top,#f8fafc_0%,transparent_40%),linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)] text-foreground dark:bg-[radial-gradient(circle_at_top,#1f2937_0%,transparent_30%),linear-gradient(180deg,#0f172a_0%,#020617_100%)]">
-      <aside
-        className={cn(
-          'fixed inset-y-0 left-0 z-40 w-72 border-r border-border/60 bg-background/90 backdrop-blur-xl transition-transform lg:translate-x-0',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        )}
-      >
-        <div className="flex h-full flex-col">
-          <div className="border-b border-border/60 px-5 py-5">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-                <AppWindow className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="text-sm font-semibold tracking-wide">DeskForge</div>
-                <div className="text-xs text-muted-foreground">Professional Utility Suite</div>
-              </div>
-            </Link>
-          </div>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute inset-x-0 top-[-18rem] h-[32rem] bg-[radial-gradient(circle_at_top,rgba(255,132,64,0.28),transparent_58%)] dark:bg-[radial-gradient(circle_at_top,rgba(255,153,92,0.16),transparent_58%)]" />
+        <div className="absolute right-[-8rem] top-40 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(14,165,233,0.14),transparent_68%)]" />
+        <div className="absolute bottom-[-10rem] left-[-8rem] h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(249,115,22,0.14),transparent_72%)]" />
+      </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-4">
-            <div className="mb-6 grid grid-cols-2 gap-2">
-              <Link to="/search" onClick={() => setSidebarOpen(false)}>
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <Search className="h-4 w-4" />
+      <div className="relative flex min-h-screen flex-col">
+        <header className="sticky top-0 z-30 border-b border-border/50 bg-background/78 backdrop-blur-2xl">
+          <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+            <div className="flex min-w-0 items-center gap-4">
+              <Link to="/" className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/60 bg-[linear-gradient(135deg,rgba(249,115,22,0.16),rgba(14,165,233,0.12))] shadow-sm">
+                  <AppWindow className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[11px] uppercase tracking-[0.32em] text-muted-foreground">DeskForge</div>
+                  <div className="truncate text-base font-semibold">DeskForge</div>
+                </div>
+              </Link>
+
+              <div className="hidden xl:flex xl:items-center xl:gap-2">
+                <Link to="/" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:bg-background hover:text-foreground")}>
+                  首页
+                </Link>
+                <Link to="/search" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/search" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:bg-background hover:text-foreground")}>
                   搜索
-                </Button>
-              </Link>
-              <Link to="/settings" onClick={() => setSidebarOpen(false)}>
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <Settings className="h-4 w-4" />
+                </Link>
+                <Link to="/settings" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/settings" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:bg-background hover:text-foreground")}>
                   设置
-                </Button>
-              </Link>
+                </Link>
+              </div>
             </div>
 
-            <nav className="space-y-5">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className="hidden h-10 rounded-2xl border-border/60 bg-background/70 px-4 text-sm shadow-sm lg:inline-flex"
+                onClick={() => setTrayOpen((prev) => !prev)}
+              >
+                浏览模块
+                <ChevronDown className={cn("h-4 w-4 transition", trayOpen && "rotate-180")} />
+              </Button>
+              <Link to="/search">
+                <Button
+                  variant="outline"
+                  className="h-10 rounded-2xl border-border/60 bg-background/70 px-4 text-sm shadow-sm"
+                >
+                  <Command className="h-4 w-4" />
+                  <span className="hidden sm:inline">命令搜索</span>
+                  <span className="rounded-lg border border-border/60 px-2 py-0.5 text-[11px] text-muted-foreground">
+                    Ctrl K
+                  </span>
+                </Button>
+              </Link>
+              <Link to="/settings">
+                <Button variant="outline" size="icon" className="rounded-2xl border-border/60 bg-background/70">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </Link>
+              <ModeToggle />
+            </div>
+          </div>
+
+          <div
+            className={cn(
+              "overflow-hidden bg-background/82 transition-[max-height,opacity] duration-300",
+              trayOpen ? "max-h-[420px] opacity-100" : "max-h-0 opacity-0"
+            )}
+          >
+            <div className="mx-auto grid w-full max-w-[1600px] gap-4 px-4 py-5 sm:px-6 lg:grid-cols-3 lg:px-8">
               {navGroups.map((group) => {
                 const Icon = iconMap[group.icon] ?? AppWindow;
 
                 return (
-                  <div key={group.id}>
-                    <div className="mb-2 flex items-center gap-2 px-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                      <Icon className="h-3.5 w-3.5" />
+                  <section key={group.id} className="rounded-[1.5rem] border border-border/60 bg-background/78 p-4 shadow-[0_16px_50px_rgba(15,23,42,0.05)]">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Icon className="h-4 w-4" />
                       {group.name}
                     </div>
-                    <div className="space-y-1">
+                    <div className="mt-4 space-y-2">
                       {group.items.map((item) => {
                         const ItemIcon = iconMap[item.icon] ?? AppWindow;
                         const active = location.pathname === item.route;
@@ -106,70 +117,51 @@ export function AppShell({ children }: { children: ReactNode }) {
                           <Link
                             key={item.id}
                             to={item.route}
-                            onClick={() => setSidebarOpen(false)}
+                            onClick={() => setTrayOpen(false)}
                             className={cn(
-                              'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors',
+                              "flex items-center gap-3 rounded-2xl px-3 py-3 text-sm transition",
                               active
-                                ? 'bg-primary text-primary-foreground shadow-sm'
-                                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                                : "bg-background/70 text-muted-foreground hover:bg-background hover:text-foreground"
                             )}
                           >
-                            <ItemIcon className="h-4 w-4" />
-                            <span className="truncate">{item.name}</span>
+                            <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl border", active ? "border-white/10 bg-white/10 dark:border-slate-200 dark:bg-slate-100" : "border-border/60 bg-background")}>
+                              <ItemIcon className="h-4 w-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate font-medium">{item.name}</div>
+                              <div className={cn("truncate text-xs", active ? "text-white/68 dark:text-slate-600" : "text-muted-foreground")}>
+                                {item.description}
+                              </div>
+                            </div>
                           </Link>
                         );
                       })}
                     </div>
-                  </div>
+                  </section>
                 );
               })}
-            </nav>
-          </div>
-        </div>
-      </aside>
-
-      {sidebarOpen && (
-        <button
-          type="button"
-          className="fixed inset-0 z-30 bg-black/30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-          aria-label="关闭导航"
-        />
-      )}
-
-      <div className="flex min-h-screen flex-1 flex-col lg:pl-72">
-        <header className="sticky top-0 z-20 border-b border-border/50 bg-background/75 backdrop-blur-xl">
-          <div className="flex items-center justify-between px-4 py-4 sm:px-6">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="icon"
-                className="lg:hidden"
-                onClick={() => setSidebarOpen((prev) => !prev)}
-              >
-                <PanelLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <div className="text-xl font-semibold tracking-tight">{meta.title}</div>
-                <div className="text-sm text-muted-foreground">{meta.description}</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Link to="/search">
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Search className="h-4 w-4" />
-                  <span className="hidden sm:inline">搜索</span>
-                </Button>
-              </Link>
-              <ModeToggle />
             </div>
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-6 sm:px-6">{children}</main>
+        <main className="relative flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+
+        <div className="pointer-events-none fixed bottom-6 right-6 hidden xl:block">
+          <Link
+            to="/search"
+            className="pointer-events-auto flex items-center gap-3 rounded-full border border-border/60 bg-background/82 px-4 py-3 shadow-[0_24px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl transition hover:-translate-y-0.5"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(135deg,rgba(249,115,22,0.92),rgba(14,165,233,0.75))] text-white">
+              <Search className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-sm font-medium">Open command search</div>
+              <div className="text-xs text-muted-foreground">未来动作、模块与工作流入口</div>
+            </div>
+          </Link>
+        </div>
       </div>
     </div>
   );
 }
-
