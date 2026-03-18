@@ -13,6 +13,11 @@ import { CodeFormatterPage } from "@/components/features/CodeFormatter/CodeForma
 import { SystemInfoPage } from "@/components/features/SystemInfo/SystemInfoPage";
 import { QrCodeGeneratorPage } from "@/components/features/QrCodeGenerator/QrCodeGeneratorPage";
 import { ApiDebuggerPage } from "@/components/features/ApiDebugger/ApiDebuggerPage";
+import { Base64ToolPage } from "@/components/features/Base64Tool/Base64ToolPage";
+import { DateTimeToolPage } from "@/components/features/DateTimeTool/DateTimeToolPage";
+import { PublicIpToolPage } from "@/components/features/PublicIpTool/PublicIpToolPage";
+import { DnsLookupToolPage } from "@/components/features/DnsLookupTool/DnsLookupToolPage";
+import { WhoisToolPage } from "@/components/features/WhoisTool/WhoisToolPage";
 
 function App() {
   return (
@@ -31,6 +36,11 @@ function App() {
             <Route path="/feature/html-formatter" element={<HtmlFormatterPage />} />
             <Route path="/feature/xml-formatter" element={<XmlFormatterPage />} />
             <Route path="/feature/code-formatter" element={<CodeFormatterPage />} />
+            <Route path="/feature/base64-tool" element={<Base64ToolPage />} />
+            <Route path="/feature/timestamp-converter" element={<DateTimeToolPage />} />
+            <Route path="/feature/public-ip-tool" element={<PublicIpToolPage />} />
+            <Route path="/feature/dns-lookup-tool" element={<DnsLookupToolPage />} />
+            <Route path="/feature/whois-tool" element={<WhoisToolPage />} />
             <Route path="/feature/system-info" element={<SystemInfoPage />} />
             <Route path="/feature/qr-generator" element={<QrCodeGeneratorPage />} />
             <Route path="/feature/api-debugger" element={<ApiDebuggerPage />} />

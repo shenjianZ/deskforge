@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Button } from '@/components/ui/button';
 import { FormatterWorkbench } from '@/components/features/FormatterWorkbench';
+import { StructuredTreeView } from '@/components/features/StructuredTreeView';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageSection } from '@/components/layout/PageSection';
 import { usePreferencesStore } from '@/stores/preferencesStore';
@@ -105,7 +106,7 @@ export function HtmlFormatterPage() {
           inputLabel="输入 HTML"
           inputDescription="粘贴原始 HTML，实时校验后再格式化或压缩。"
           outputLanguage="html"
-          outputDescription="统一结果区支持复制、聚焦结果和统计信息。"
+          outputDescription="统一结果区支持代码视图、结构树、复制、聚焦结果和统计信息。"
           input={input}
           onInputChange={setInput}
           output={output}
@@ -120,6 +121,23 @@ export function HtmlFormatterPage() {
           onClear={clearInput}
           onLoadExample={loadExample}
           wrapLongLines={wrapLongLines}
+          outputViews={[
+            {
+              key: 'tree',
+              label: '树结构',
+              content: (
+                <StructuredTreeView
+                  source={output}
+                  mode="html"
+                  emptyMessage="当前结果无法生成 HTML 树结构。"
+                />
+              ),
+            },
+            {
+              key: 'code',
+              label: '代码',
+            },
+          ]}
           configPanel={
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-3">
@@ -158,7 +176,7 @@ export function HtmlFormatterPage() {
             <>
               <p>1. 在输入区粘贴 HTML，系统会自动做基础校验。</p>
               <p>2. 根据偏好选择缩进和模式，点击格式化或压缩。</p>
-              <p>3. 结果区支持复制、统计信息和长行换行策略。</p>
+              <p>3. 结果区支持代码视图和结构树切换，便于查看节点层级。</p>
             </>
           }
         />

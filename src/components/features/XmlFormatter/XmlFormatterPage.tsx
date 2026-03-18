@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Button } from '@/components/ui/button';
 import { FormatterWorkbench } from '@/components/features/FormatterWorkbench';
+import { StructuredTreeView } from '@/components/features/StructuredTreeView';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageSection } from '@/components/layout/PageSection';
 import { usePreferencesStore } from '@/stores/preferencesStore';
@@ -104,7 +105,7 @@ export function XmlFormatterPage() {
           inputLabel="输入 XML"
           inputDescription="适合配置文件、接口报文和结构化数据整理。"
           outputLanguage="xml"
-          outputDescription="结果区提供高亮、复制与布局聚焦。"
+          outputDescription="结果区提供代码视图、结构树、复制与布局聚焦。"
           input={input}
           onInputChange={setInput}
           output={output}
@@ -119,6 +120,23 @@ export function XmlFormatterPage() {
           onClear={clearInput}
           onLoadExample={loadExample}
           wrapLongLines={wrapLongLines}
+          outputViews={[
+            {
+              key: 'tree',
+              label: '树结构',
+              content: (
+                <StructuredTreeView
+                  source={output}
+                  mode="xml"
+                  emptyMessage="当前结果无法解析为 XML，无法显示树结构。"
+                />
+              ),
+            },
+            {
+              key: 'code',
+              label: '代码',
+            },
+          ]}
           configPanel={
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-3">
@@ -157,7 +175,7 @@ export function XmlFormatterPage() {
             <>
               <p>1. 粘贴 XML 后自动校验结构合法性。</p>
               <p>2. 根据场景选择可读性优先的格式化或传输优先的压缩。</p>
-              <p>3. 输入区可折叠，方便对长报文进行结果比对。</p>
+              <p>3. 结果支持代码视图和结构树切换，适合查看标签层级。</p>
             </>
           }
         />

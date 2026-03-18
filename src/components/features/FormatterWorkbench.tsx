@@ -220,7 +220,7 @@ export function FormatterWorkbench({
                 ))}
               </TabsList>
               {views.map((view) => (
-                <TabsContent key={view.key} value={view.key}>
+                <TabsContent key={view.key} value={view.key} forceMount>
                   {view.content ?? (
                     <CodeHighlighter
                       code={output}

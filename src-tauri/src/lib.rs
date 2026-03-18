@@ -159,6 +159,14 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::api_debugger_commands::execute_api_request,
+            commands::base64_tool_commands::encode_base64,
+            commands::base64_tool_commands::decode_base64,
+            commands::base64_tool_commands::validate_base64,
+            commands::datetime_tool_commands::timestamp_to_datetime,
+            commands::datetime_tool_commands::datetime_to_timestamp,
+            commands::dns_lookup_tool_commands::lookup_dns_records,
+            commands::public_ip_tool_commands::get_public_ip_info,
+            commands::whois_tool_commands::lookup_whois,
             // window 窗口操作
             commands::window_commands::toggle_window,
             commands::window_commands::hide_window,
