@@ -17,6 +17,8 @@ use std::time::Duration;
 use serde::Serialize;
 use tauri::{AppHandle, Manager};
 
+use crate::services::window_service::WindowService;
+
 #[derive(Serialize)]
 pub struct ScreenRegionRgba {
     pub width: i32,
@@ -110,9 +112,7 @@ pub(crate) fn prewarm_picker_window(app: &AppHandle) -> Result<(), String> {
 #[tauri::command]
 pub async fn start_color_picker(app: AppHandle) -> Result<(), String> {
     // 先隐藏主窗口
-    if let Some(main_window) = app.get_webview_window("main") {
-        main_window.hide().map_err(|e| e.to_string())?;
-    }
+    WindowService::hide_main_window_to_tray(&app).map_err(|e| e.to_string())?;
 
     // 等待窗口完全隐藏
     thread::sleep(Duration::from_millis(150));
@@ -199,12 +199,8 @@ pub async fn close_picker_window(app: AppHandle) -> Result<(), String> {
             .map_err(|e| format!("隐藏取色器窗口失败: {}", e))?;
 
         // 恢复主窗口
-        if let Some(main_window) = app.get_webview_window("main") {
-            main_window
-                .show()
-                .and_then(|_| main_window.set_focus())
-                .map_err(|e| format!("显示主窗口失败: {}", e))?;
-        }
+        WindowService::show_main_window(&app)
+            .map_err(|e| format!("显示主窗口失败: {}", e))?;
     }
     Ok(())
 }

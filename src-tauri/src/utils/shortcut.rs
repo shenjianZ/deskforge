@@ -4,8 +4,9 @@
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use tauri::Manager;
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
+
+use crate::services::window_service::WindowService;
 
 /// 注册全局快捷键
 ///
@@ -29,15 +30,7 @@ pub fn register_global_shortcuts(app: &tauri::App) -> Result<(), String> {
             }
             is_processing_clone.store(true, Ordering::SeqCst);
 
-            if let Some(window) = app_handle.get_webview_window("main") {
-                let _ = window.is_visible().and_then(|is_visible| {
-                    if is_visible {
-                        window.hide()
-                    } else {
-                        window.show().and_then(|_| window.set_focus())
-                    }
-                });
-            }
+            let _ = WindowService::toggle_main_window(&app_handle);
 
             // 延迟重置处理标志，防止快速重复触发
             let is_processing_reset = is_processing_clone.clone();

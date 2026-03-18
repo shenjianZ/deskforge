@@ -8,6 +8,7 @@ import { categories } from "@/features/registry";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
+import { WindowChrome } from "@/components/layout/WindowChrome";
 
 const iconMap = LucideIcons as unknown as Record<string, typeof AppWindow>;
 
@@ -36,7 +37,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <div className="relative flex min-h-screen flex-col">
-        <header className="sticky top-0 z-30 border-b border-border/50 bg-background/78 backdrop-blur-2xl">
+        <WindowChrome />
+
+        <header className="sticky top-10 z-30 border-b border-border/50 bg-background/78 backdrop-blur-2xl">
           <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-4">
               <Link to="/" className="flex items-center gap-3">

@@ -3,7 +3,7 @@
 //! 提供应用初始化和模块组装功能
 
 use tauri::{
-    menu::{MenuBuilder, MenuItem, MenuItemBuilder},
+    menu::{MenuBuilder, MenuItemBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager, Runtime, WindowEvent,
 };
@@ -18,63 +18,23 @@ mod utils;
 
 // 重新导出常用类型
 pub use error::{AppError, AppResult};
+use services::window_service::{TrayMenuState, WindowService};
 
 const SHOW_MENU_ID: &str = "show";
 const HIDE_MENU_ID: &str = "hide";
 const TOGGLE_MENU_ID: &str = "toggle";
 const QUIT_MENU_ID: &str = "quit";
 
-struct TrayMenuState<R: Runtime> {
-    show_item: MenuItem<R>,
-    hide_item: MenuItem<R>,
-}
-
-fn sync_tray_menu_state<R: Runtime>(app: &AppHandle<R>) {
-    let Some(state) = app.try_state::<TrayMenuState<R>>() else {
-        return;
-    };
-
-    let is_visible = app
-        .get_webview_window("main")
-        .and_then(|window| window.is_visible().ok())
-        .unwrap_or(false);
-
-    let _ = state.show_item.set_enabled(!is_visible);
-    let _ = state.hide_item.set_enabled(is_visible);
-}
-
 fn show_main_window<R: Runtime>(app: &AppHandle<R>) {
-    if let Some(window) = app.get_webview_window("main") {
-        let _ = window.unminimize();
-        let _ = window.show();
-        let _ = window.set_focus();
-    }
-
-    sync_tray_menu_state(app);
+    let _ = WindowService::show_main_window(app);
 }
 
 fn hide_main_window<R: Runtime>(app: &AppHandle<R>) {
-    if let Some(window) = app.get_webview_window("main") {
-        let _ = window.hide();
-    }
-
-    sync_tray_menu_state(app);
+    let _ = WindowService::hide_main_window_to_tray(app);
 }
 
 fn toggle_main_window<R: Runtime>(app: &AppHandle<R>) {
-    if let Some(window) = app.get_webview_window("main") {
-        let _ = window.is_visible().and_then(|is_visible| {
-            if is_visible {
-                window.hide()
-            } else {
-                window.unminimize()?;
-                window.show()?;
-                window.set_focus()
-            }
-        });
-    }
-
-    sync_tray_menu_state(app);
+    let _ = WindowService::toggle_main_window(app);
 }
 
 /// 运行 Tauri 应用
@@ -95,8 +55,7 @@ pub fn run() {
             if window.label() == "main" {
                 if let WindowEvent::CloseRequested { api, .. } = event {
                     api.prevent_close();
-                    let _ = window.hide();
-                    sync_tray_menu_state(&window.app_handle());
+                    let _ = WindowService::hide_main_window_to_tray(&window.app_handle());
                 }
             }
         })
@@ -146,7 +105,7 @@ pub fn run() {
             }
 
             tray_builder.build(app)?;
-            sync_tray_menu_state(app.handle());
+            WindowService::sync_tray_menu_state(app.handle());
 
             // 预热取色器窗口：避免第一次取色出现“白屏闪一下”
             // 窗口会以 hidden 状态创建，不会影响用户体验
@@ -171,6 +130,8 @@ pub fn run() {
             commands::window_commands::toggle_window,
             commands::window_commands::hide_window,
             commands::window_commands::show_window,
+            commands::window_commands::get_main_window_state,
+            commands::window_commands::toggle_maximize_main_window,
             // 取色器命令
             commands::picker_color_commands::rgb_to_hsl,
             commands::picker_color_commands::start_color_picker,
