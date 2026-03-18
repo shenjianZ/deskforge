@@ -158,6 +158,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            commands::api_debugger_commands::execute_api_request,
             // window 窗口操作
             commands::window_commands::toggle_window,
             commands::window_commands::hide_window,

@@ -178,6 +178,16 @@ export const featuresData: Feature[] = [
     implemented: true,
   },
   {
+    id: 'api-debugger',
+    name: 'API / 网络调试工具',
+    description: '轻量版 Postman，支持 HTTP 请求调试、集合、历史与环境变量',
+    icon: 'Network',
+    category: 'dev',
+    route: '/feature/api-debugger',
+    tags: ['api', 'http', 'network', 'postman', '调试', '接口', '请求', '响应'],
+    implemented: true,
+  },
+  {
     id: 'base64-tool',
     name: 'Base64 编解码',
     description: 'Base64 编码和解码工具',

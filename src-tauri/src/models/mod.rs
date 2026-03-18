@@ -2,6 +2,7 @@
 //!
 //! 定义应用中使用的数据结构
 
+pub mod api_debugger;
 pub mod code_format;
 pub mod color;
 pub mod css_format;

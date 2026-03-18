@@ -29,6 +29,9 @@ sysinfo = "0.30"
 qrcode = "0.14"
 image = "0.25"
 base64 = "0.22"
+chrono = { version = "0.4", features = ["clock"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+urlencoding = "2.1"
 
 # HTML 处理相关依赖
 markup_fmt = "0.18"

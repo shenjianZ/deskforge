@@ -12,6 +12,7 @@ import { XmlFormatterPage } from "@/components/features/XmlFormatter/XmlFormatte
 import { CodeFormatterPage } from "@/components/features/CodeFormatter/CodeFormatterPage";
 import { SystemInfoPage } from "@/components/features/SystemInfo/SystemInfoPage";
 import { QrCodeGeneratorPage } from "@/components/features/QrCodeGenerator/QrCodeGeneratorPage";
+import { ApiDebuggerPage } from "@/components/features/ApiDebugger/ApiDebuggerPage";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route path="/feature/code-formatter" element={<CodeFormatterPage />} />
             <Route path="/feature/system-info" element={<SystemInfoPage />} />
             <Route path="/feature/qr-generator" element={<QrCodeGeneratorPage />} />
+            <Route path="/feature/api-debugger" element={<ApiDebuggerPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AppShell>

@@ -29,3 +29,5 @@ src-tauri/gen
 package-lock.json
 yarn.lock
 bun.lockb
+
+tsconfig.app.tsbuildinfo

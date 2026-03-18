@@ -58,6 +58,11 @@ pub enum AppError {
     ///
     /// 表示二维码生成过程失败
     QrCodeGenerationFailed(String),
+
+    /// 网络请求失败
+    ///
+    /// 表示 API 调试工具在发送请求时失败
+    NetworkRequestFailed(String),
 }
 
 impl fmt::Display for AppError {
@@ -73,6 +78,7 @@ impl fmt::Display for AppError {
             AppError::InvalidData(msg) => write!(f, "数据无效: {}", msg),
             AppError::IoError(msg) => write!(f, "IO 错误: {}", msg),
             AppError::QrCodeGenerationFailed(msg) => write!(f, "二维码生成失败: {}", msg),
+            AppError::NetworkRequestFailed(msg) => write!(f, "网络请求失败: {}", msg),
         }
     }
 }
