@@ -21,6 +21,20 @@ pub enum RandomValueMode {
     String,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum CountryPreset {
+    #[serde(rename = "cn")]
+    Cn,
+    #[serde(rename = "us")]
+    Us,
+    #[serde(rename = "uk")]
+    Uk,
+    #[serde(rename = "jp")]
+    Jp,
+    #[serde(rename = "de")]
+    De,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UuidGenerateOptions {
@@ -118,6 +132,60 @@ pub struct JwtDecodeOptions {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct UserDataGenerateOptions {
+    pub country: CountryPreset,
+    #[serde(default = "default_batch_count")]
+    pub count: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IdentityGenerateOptions {
+    pub country: CountryPreset,
+    #[serde(default = "default_batch_count")]
+    pub count: usize,
+    #[serde(default)]
+    pub document_type: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PaymentCardGenerateOptions {
+    pub country: CountryPreset,
+    #[serde(default = "default_batch_count")]
+    pub count: usize,
+    #[serde(default)]
+    pub brand: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserProfileGenerateOptions {
+    pub country: CountryPreset,
+    #[serde(default = "default_batch_count")]
+    pub count: usize,
+    #[serde(default = "default_true")]
+    pub include_profile: bool,
+    #[serde(default = "default_true")]
+    pub include_contact: bool,
+    #[serde(default = "default_true")]
+    pub include_address: bool,
+    #[serde(default = "default_true")]
+    pub include_company: bool,
+    #[serde(default)]
+    pub include_identity: bool,
+    #[serde(default)]
+    pub include_payment: bool,
+    #[serde(default)]
+    pub include_account: bool,
+    #[serde(default)]
+    pub include_preferences: bool,
+    #[serde(default)]
+    pub include_device: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GeneratorItemsResult {
     pub text: String,
     pub items: Vec<String>,
@@ -147,6 +215,17 @@ pub struct JwtDecodeResult {
     pub header_pretty: String,
     pub payload_pretty: String,
     pub signature: String,
+    pub meta: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserDataGenerateResult {
+    pub country: String,
+    pub locale_label: String,
+    pub text: String,
+    pub items: Vec<String>,
+    pub json: String,
     pub meta: Vec<String>,
 }
 
@@ -185,3 +264,4 @@ fn default_true() -> bool {
 fn default_separator() -> String {
     "_".to_string()
 }
+

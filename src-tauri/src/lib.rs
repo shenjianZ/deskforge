@@ -135,6 +135,13 @@ pub fn run() {
             commands::generator_commands::generate_hash,
             commands::generator_commands::generate_jwt_mock,
             commands::generator_commands::decode_jwt_mock,
+            commands::generator_commands::generate_user_persona,
+            commands::generator_commands::generate_user_contact,
+            commands::generator_commands::generate_user_address,
+            commands::generator_commands::generate_user_company,
+            commands::generator_commands::generate_identity_document,
+            commands::generator_commands::generate_payment_card,
+            commands::generator_commands::generate_user_profile,
             commands::public_ip_tool_commands::get_public_ip_info,
             commands::whois_tool_commands::lookup_whois,
             // window 窗口操作
@@ -186,4 +193,5 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("运行 Tauri 应用时出错");
 }
+
 
