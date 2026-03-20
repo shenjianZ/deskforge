@@ -38,6 +38,27 @@ impl ImageOutputFormat {
     }
 }
 
+/// 缩放算法
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ImageResampleMode {
+    #[serde(rename = "quality")]
+    Quality,
+    #[serde(rename = "fast")]
+    Fast,
+}
+
+/// 图片源信息
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImageSourceInfo {
+    pub source_format: String,
+    pub width: u32,
+    pub height: u32,
+    pub has_alpha: bool,
+    pub file_size: usize,
+    pub preview_data_url: String,
+}
+
 /// 图片转换配置
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -86,6 +107,71 @@ impl Default for ImageConversionOptions {
     }
 }
 
+/// 图片压缩配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImageCompressionOptions {
+    pub target_format: ImageOutputFormat,
+    #[serde(default = "default_quality")]
+    pub quality: u8,
+    #[serde(default)]
+    pub webp_lossless: bool,
+    #[serde(default = "default_background_color")]
+    pub background_color: String,
+}
+
+impl Default for ImageCompressionOptions {
+    fn default() -> Self {
+        Self {
+            target_format: ImageOutputFormat::Webp,
+            quality: default_quality(),
+            webp_lossless: false,
+            background_color: default_background_color(),
+        }
+    }
+}
+
+/// 图片裁剪配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImageCropOptions {
+    pub crop_x: u32,
+    pub crop_y: u32,
+    pub crop_width: u32,
+    pub crop_height: u32,
+    pub target_format: ImageOutputFormat,
+    #[serde(default = "default_quality")]
+    pub quality: u8,
+    #[serde(default)]
+    pub webp_lossless: bool,
+    #[serde(default = "default_background_color")]
+    pub background_color: String,
+    #[serde(default = "default_ico_size")]
+    pub ico_size: u32,
+    pub output_size: Option<u32>,
+}
+
+/// 图片缩放配置
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImageResizeOptions {
+    pub target_width: u32,
+    pub target_height: u32,
+    pub target_format: ImageOutputFormat,
+    #[serde(default = "default_quality")]
+    pub quality: u8,
+    #[serde(default)]
+    pub webp_lossless: bool,
+    #[serde(default = "default_background_color")]
+    pub background_color: String,
+    #[serde(default = "default_resample_mode")]
+    pub resample_mode: ImageResampleMode,
+}
+
+fn default_resample_mode() -> ImageResampleMode {
+    ImageResampleMode::Quality
+}
+
 /// 图片转换预览结果
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -99,5 +185,6 @@ pub struct ImageConversionPreviewResult {
     pub output_width: u32,
     pub output_height: u32,
     pub has_alpha: bool,
+    pub source_bytes: usize,
     pub estimated_bytes: usize,
 }

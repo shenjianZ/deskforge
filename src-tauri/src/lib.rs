@@ -148,8 +148,15 @@ pub fn run() {
             commands::html_format_commands::validate_html,
             commands::html_format_commands::compact_html,
             // 图片转换命令
+            commands::image_converter_commands::get_image_source_info,
             commands::image_converter_commands::generate_image_conversion_preview,
             commands::image_converter_commands::save_converted_image,
+            commands::image_converter_commands::generate_image_compression_preview,
+            commands::image_converter_commands::save_compressed_image,
+            commands::image_converter_commands::generate_image_crop_preview,
+            commands::image_converter_commands::save_cropped_image,
+            commands::image_converter_commands::generate_image_resize_preview,
+            commands::image_converter_commands::save_resized_image,
             // XML 格式化命令
             commands::xml_format_commands::format_xml,
             commands::xml_format_commands::validate_xml,

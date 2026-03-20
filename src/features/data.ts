@@ -145,6 +145,36 @@ export const featuresData: Feature[] = [
     tags: ['图片', '转换', 'png', 'jpeg', 'jpg', 'webp', 'bmp', 'tiff', 'ico', 'svg', 'image', 'convert'],
     implemented: true,
   },
+  {
+    id: 'image-compressor',
+    name: '图片压缩',
+    description: '压缩图片体积，支持输出 JPEG、WebP、PNG，适合网页资源优化',
+    icon: 'Minimize2',
+    category: 'media',
+    route: '/feature/image-compressor',
+    tags: ['图片', '压缩', '体积', 'webp', 'jpeg', 'png', 'optimize', 'compress'],
+    implemented: true,
+  },
+  {
+    id: 'image-cropper',
+    name: '图片裁剪',
+    description: '支持自由裁剪、比例裁剪和图标裁剪导出',
+    icon: 'Crop',
+    category: 'media',
+    route: '/feature/image-cropper',
+    tags: ['图片', '裁剪', '图标', 'icon', 'crop', 'square', '1:1'],
+    implemented: true,
+  },
+  {
+    id: 'image-resizer',
+    name: '图片缩放',
+    description: '按像素尺寸缩放图片，支持质量优先和速度优先重采样',
+    icon: 'MoveDiagonal',
+    category: 'media',
+    route: '/feature/image-resizer',
+    tags: ['图片', '缩放', '尺寸', 'resize', 'scale', '宽高', 'preset'],
+    implemented: true,
+  },
 
   // 开发类
   {
