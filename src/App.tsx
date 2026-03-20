@@ -22,6 +22,8 @@ import { ImageConverterPage } from "@/components/features/ImageConverter/ImageCo
 import { ImageCompressorPage } from "@/components/features/ImageCompressor/ImageCompressorPage";
 import { ImageCropperPage } from "@/components/features/ImageCropper/ImageCropperPage";
 import { ImageResizerPage } from "@/components/features/ImageResizer/ImageResizerPage";
+import { MarkdownPreviewPage } from "@/components/features/MarkdownPreview/MarkdownPreviewPage";
+import { RegexTesterPage } from "@/components/features/RegexTester/RegexTesterPage";
 
 function App() {
   return (
@@ -49,6 +51,8 @@ function App() {
             <Route path="/feature/image-compressor" element={<ImageCompressorPage />} />
             <Route path="/feature/image-cropper" element={<ImageCropperPage />} />
             <Route path="/feature/image-resizer" element={<ImageResizerPage />} />
+            <Route path="/feature/markdown-preview" element={<MarkdownPreviewPage />} />
+            <Route path="/feature/regex-tester" element={<RegexTesterPage />} />
             <Route path="/feature/system-info" element={<SystemInfoPage />} />
             <Route path="/feature/qr-generator" element={<QrCodeGeneratorPage />} />
             <Route path="/feature/api-debugger" element={<ApiDebuggerPage />} />

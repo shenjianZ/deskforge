@@ -245,7 +245,7 @@ export const featuresData: Feature[] = [
     category: 'dev',
     route: '/feature/regex-tester',
     tags: ['正则', 'regex', '表达式', 'regular', 'expression'],
-    implemented: false,
+    implemented: true,
   },
   {
     id: 'markdown-preview',
@@ -255,7 +255,7 @@ export const featuresData: Feature[] = [
     category: 'dev',
     route: '/feature/markdown-preview',
     tags: ['markdown', '预览', 'md', 'preview', '文档'],
-    implemented: false,
+    implemented: true,
   },
   {
     id: 'html-entity-tool',

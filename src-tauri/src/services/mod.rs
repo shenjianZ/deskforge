@@ -10,6 +10,7 @@ pub mod dns_lookup_tool_service;
 pub mod html_format_service;
 pub mod image_converter_service;
 pub mod json_format_service;
+pub mod markdown_preview_service;
 pub mod public_ip_tool_service;
 pub mod qrcode_service;
 pub mod system_info_service;

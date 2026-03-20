@@ -12,6 +12,7 @@ pub mod dns_lookup_tool;
 pub mod html_format;
 pub mod image_converter;
 pub mod json_format;
+pub mod markdown_preview;
 pub mod public_ip_tool;
 pub mod qrcode;
 pub mod rust_format;
