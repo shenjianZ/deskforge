@@ -23,6 +23,7 @@ fn default_indent() -> u32 {
 }
 
 /// Rust 验证结果
+#[cfg(test)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RustValidateResult {

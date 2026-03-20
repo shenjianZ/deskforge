@@ -10,6 +10,7 @@ pub mod css_format;
 pub mod datetime_tool;
 pub mod dns_lookup_tool;
 pub mod html_format;
+pub mod image_converter;
 pub mod json_format;
 pub mod public_ip_tool;
 pub mod qrcode;

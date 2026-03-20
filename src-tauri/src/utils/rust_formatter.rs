@@ -2,7 +2,9 @@
 //!
 //! 使用 syn 进行专业的 Rust 代码格式化
 
-use crate::models::rust_format::{RustFormatConfig, RustValidateResult};
+use crate::models::rust_format::RustFormatConfig;
+#[cfg(test)]
+use crate::models::rust_format::RustValidateResult;
 
 /// 格式化 Rust 代码
 ///
@@ -287,6 +289,7 @@ fn compact_rust(input: &str) -> Result<String, String> {
 /// # 返回
 ///
 /// 返回验证结果
+#[cfg(test)]
 pub fn validate_rust(input: &str) -> RustValidateResult {
     if input.trim().is_empty() {
         return RustValidateResult {

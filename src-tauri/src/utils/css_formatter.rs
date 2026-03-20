@@ -2,7 +2,9 @@
 //!
 //! 使用 lightningcss 进行专业的 CSS 代码格式化
 
-use crate::models::css_format::{CssFormatConfig, CssValidateResult};
+use crate::models::css_format::CssFormatConfig;
+#[cfg(test)]
+use crate::models::css_format::CssValidateResult;
 
 /// 格式化 CSS 代码
 ///
@@ -126,6 +128,7 @@ fn compact_css(input: &str) -> Result<String, String> {
 /// # 返回
 ///
 /// 返回验证结果
+#[cfg(test)]
 pub fn validate_css(input: &str) -> CssValidateResult {
     if input.trim().is_empty() {
         return CssValidateResult {

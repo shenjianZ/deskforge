@@ -8,6 +8,7 @@ pub mod code_format_service;
 pub mod datetime_tool_service;
 pub mod dns_lookup_tool_service;
 pub mod html_format_service;
+pub mod image_converter_service;
 pub mod json_format_service;
 pub mod public_ip_tool_service;
 pub mod qrcode_service;

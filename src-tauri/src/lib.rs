@@ -147,6 +147,9 @@ pub fn run() {
             commands::html_format_commands::format_html,
             commands::html_format_commands::validate_html,
             commands::html_format_commands::compact_html,
+            // 图片转换命令
+            commands::image_converter_commands::generate_image_conversion_preview,
+            commands::image_converter_commands::save_converted_image,
             // XML 格式化命令
             commands::xml_format_commands::format_xml,
             commands::xml_format_commands::validate_xml,

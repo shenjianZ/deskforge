@@ -46,14 +46,14 @@ export function Home() {
       <section>
         <div className="rounded-[2rem] border border-border/60 bg-background/72 p-5 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6">
           <div className="flex flex-col gap-5 border-b border-border/60 pb-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div className="space-y-3">
-                <h2 className="text-2xl font-semibold tracking-tight">模块</h2>
-                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex min-w-0 flex-1 flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
+                <h2 className="shrink-0 text-2xl font-semibold tracking-tight">模块</h2>
+                <div className="flex flex-wrap gap-2">
                   {moduleStats.map((stat) => (
                     <div
                       key={stat.label}
-                      className="rounded-[1rem] border border-border/60 bg-background/75 px-3 py-2.5 text-center"
+                      className="min-w-[88px] rounded-[1rem] border border-border/60 bg-background/75 px-3 py-2.5 text-center"
                     >
                       <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                         {stat.label}
@@ -63,7 +63,7 @@ export function Home() {
                   ))}
                 </div>
               </div>
-              <div className="relative w-full max-w-md">
+              <div className="relative w-full lg:max-w-md lg:flex-shrink-0">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   type="text"

@@ -135,6 +135,16 @@ export const featuresData: Feature[] = [
     tags: ['视频', '转换', 'video', 'converter', 'format'],
     implemented: false,
   },
+  {
+    id: 'image-converter',
+    name: '图片转换',
+    description: '支持 PNG、JPEG、WebP、BMP、TIFF、ICO 互转，并支持 SVG 输入',
+    icon: 'Image',
+    category: 'media',
+    route: '/feature/image-converter',
+    tags: ['图片', '转换', 'png', 'jpeg', 'jpg', 'webp', 'bmp', 'tiff', 'ico', 'svg', 'image', 'convert'],
+    implemented: true,
+  },
 
   // 开发类
   {
