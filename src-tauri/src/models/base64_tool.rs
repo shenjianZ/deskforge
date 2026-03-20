@@ -71,3 +71,32 @@ pub struct Base64ValidateResult {
     /// 错误信息
     pub error_message: Option<String>,
 }
+
+/// 图片 Base64 处理结果
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Base64ImageResult {
+    /// 纯 Base64 内容
+    pub base64: String,
+
+    /// 带 data URL 前缀的内容
+    pub data_url: String,
+
+    /// MIME 类型
+    pub mime: String,
+
+    /// 图片格式
+    pub format: String,
+
+    /// 建议扩展名
+    pub suggested_extension: String,
+
+    /// 图片宽度
+    pub width: u32,
+
+    /// 图片高度
+    pub height: u32,
+
+    /// 原始字节大小
+    pub byte_size: usize,
+}
