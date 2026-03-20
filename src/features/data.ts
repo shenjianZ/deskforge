@@ -238,6 +238,16 @@ export const featuresData: Feature[] = [
     implemented: true,
   },
   {
+    id: 'text-tools',
+    name: '文本工具',
+    description: '文本去重、排序、替换、分割合并和常见文本转换',
+    icon: 'TextCursorInput',
+    category: 'dev',
+    route: '/feature/text-tools',
+    tags: ['文本', 'text', '去重', '排序', '替换', '分割', '合并', '换行符', '驼峰', 'snake', 'kebab'],
+    implemented: true,
+  },
+  {
     id: 'generator-hub',
     name: '生成器中心',
     description: '统一提供 UUID、密码、Hash、JWT、随机值和时间戳等开发生成器',

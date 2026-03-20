@@ -14,6 +14,7 @@ import { SystemInfoPage } from "@/components/features/SystemInfo/SystemInfoPage"
 import { QrCodeGeneratorPage } from "@/components/features/QrCodeGenerator/QrCodeGeneratorPage";
 import { ApiDebuggerPage } from "@/components/features/ApiDebugger/ApiDebuggerPage";
 import { Base64ToolPage } from "@/components/features/Base64Tool/Base64ToolPage";
+import { TextToolsPage } from "@/components/features/TextTools/TextToolsPage";
 import { DateTimeToolPage } from "@/components/features/DateTimeTool/DateTimeToolPage";
 import { PublicIpToolPage } from "@/components/features/PublicIpTool/PublicIpToolPage";
 import { DnsLookupToolPage } from "@/components/features/DnsLookupTool/DnsLookupToolPage";
@@ -43,6 +44,7 @@ function App() {
             <Route path="/feature/xml-formatter" element={<XmlFormatterPage />} />
             <Route path="/feature/code-formatter" element={<CodeFormatterPage />} />
             <Route path="/feature/base64-tool" element={<Base64ToolPage />} />
+            <Route path="/feature/text-tools" element={<TextToolsPage />} />
             <Route path="/feature/timestamp-converter" element={<DateTimeToolPage />} />
             <Route path="/feature/public-ip-tool" element={<PublicIpToolPage />} />
             <Route path="/feature/dns-lookup-tool" element={<DnsLookupToolPage />} />
