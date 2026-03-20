@@ -238,6 +238,15 @@ export const featuresData: Feature[] = [
     implemented: true,
   },
   {
+    id: 'generator-hub',
+    name: '生成器中心',
+    description: '统一提供 UUID、密码、Hash、JWT、随机值和时间戳等开发生成器',
+    icon: 'Dices',
+    category: 'dev',
+    route: '/feature/generator-hub',
+    tags: ['generator', 'uuid', 'password', 'hash', 'jwt', 'random', 'token', 'mock'],
+    implemented: true,
+  },  {
     id: 'regex-tester',
     name: '正则测试',
     description: '测试和调试正则表达式',
@@ -331,3 +340,6 @@ export const categories = [
   { id: 'media' as const, name: '媒体', icon: 'PlayCircle' },
   { id: 'dev' as const, name: '开发', icon: 'Code' },
 ];
+
+
+

@@ -1023,19 +1023,25 @@ version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
  "chrono",
+ "hex",
+ "hmac",
  "html5ever 0.27.0",
  "image",
  "lightningcss",
  "markup_fmt",
+ "md5",
  "minify-html",
  "qrcode",
  "quick-xml 0.37.5",
+ "rand 0.8.5",
  "reqwest 0.12.28",
  "resvg",
  "roxmltree",
  "serde",
  "serde_derive",
  "serde_json",
+ "sha1",
+ "sha2",
  "syn 2.0.114",
  "sysinfo",
  "tauri",
@@ -1046,6 +1052,7 @@ dependencies = [
  "tauri-plugin-opener",
  "tiny-skia",
  "urlencoding",
+ "uuid",
  "webp",
  "windows 0.58.0",
  "wmi",
@@ -1059,6 +1066,7 @@ checksum = "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292"
 dependencies = [
  "block-buffer",
  "crypto-common",
+ "subtle",
 ]
 
 [[package]]
@@ -2032,6 +2040,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+name = "hmac"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e"
+dependencies = [
+ "digest",
+]
+
+[[package]]
 name = "html5ever"
 version = "0.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2851,6 +2868,12 @@ dependencies = [
  "cfg-if",
  "rayon",
 ]
+
+[[package]]
+name = "md5"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "490cc448043f947bae3cbee9c203358d62dbee0db12107a74be5c30ccfd09771"
 
 [[package]]
 name = "memchr"
@@ -4812,6 +4835,17 @@ checksum = "d52aa42f8fdf0fed91e5ce7f23d8138441002fa31dca008acf47e6fd4721f741"
 dependencies = [
  "nodrop",
  "stable_deref_trait",
+]
+
+[[package]]
+name = "sha1"
+version = "0.10.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3bf829a2d51ab4a5ddf1352d8470c140cadc8301b2ae1789db023f01cedd6ba"
+dependencies = [
+ "cfg-if",
+ "cpufeatures",
+ "digest",
 ]
 
 [[package]]

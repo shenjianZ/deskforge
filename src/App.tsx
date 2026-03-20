@@ -24,12 +24,12 @@ import { ImageCropperPage } from "@/components/features/ImageCropper/ImageCroppe
 import { ImageResizerPage } from "@/components/features/ImageResizer/ImageResizerPage";
 import { MarkdownPreviewPage } from "@/components/features/MarkdownPreview/MarkdownPreviewPage";
 import { RegexTesterPage } from "@/components/features/RegexTester/RegexTesterPage";
+import { GeneratorHubPage } from "@/components/features/GeneratorHub/GeneratorHubPage";
 
 function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <div className="min-h-screen">
-        {/* 全局快捷键监听 */}
         <CommandPalette />
 
         <AppShell>
@@ -53,6 +53,7 @@ function App() {
             <Route path="/feature/image-resizer" element={<ImageResizerPage />} />
             <Route path="/feature/markdown-preview" element={<MarkdownPreviewPage />} />
             <Route path="/feature/regex-tester" element={<RegexTesterPage />} />
+            <Route path="/feature/generator-hub" element={<GeneratorHubPage />} />
             <Route path="/feature/system-info" element={<SystemInfoPage />} />
             <Route path="/feature/qr-generator" element={<QrCodeGeneratorPage />} />
             <Route path="/feature/api-debugger" element={<ApiDebuggerPage />} />

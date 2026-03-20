@@ -127,6 +127,14 @@ pub fn run() {
             commands::datetime_tool_commands::timestamp_to_datetime,
             commands::datetime_tool_commands::datetime_to_timestamp,
             commands::dns_lookup_tool_commands::lookup_dns_records,
+            commands::generator_commands::generate_uuid,
+            commands::generator_commands::generate_nanoid,
+            commands::generator_commands::generate_random_value,
+            commands::generator_commands::generate_password,
+            commands::generator_commands::generate_api_key,
+            commands::generator_commands::generate_hash,
+            commands::generator_commands::generate_jwt_mock,
+            commands::generator_commands::decode_jwt_mock,
             commands::public_ip_tool_commands::get_public_ip_info,
             commands::whois_tool_commands::lookup_whois,
             // window 窗口操作
@@ -178,3 +186,4 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("运行 Tauri 应用时出错");
 }
+

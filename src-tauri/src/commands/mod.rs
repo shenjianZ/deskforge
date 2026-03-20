@@ -7,6 +7,7 @@ pub mod base64_tool_commands;
 pub mod code_format_commands;
 pub mod datetime_tool_commands;
 pub mod dns_lookup_tool_commands;
+pub mod generator_commands;
 pub mod html_format_commands;
 pub mod image_converter_commands;
 pub mod json_format_commands;
@@ -18,3 +19,4 @@ pub mod system_info_commands;
 pub mod whois_tool_commands;
 pub mod window_commands;
 pub mod xml_format_commands;
+

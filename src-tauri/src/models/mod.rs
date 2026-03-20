@@ -9,6 +9,7 @@ pub mod color;
 pub mod css_format;
 pub mod datetime_tool;
 pub mod dns_lookup_tool;
+pub mod generator;
 pub mod html_format;
 pub mod image_converter;
 pub mod json_format;
@@ -19,3 +20,4 @@ pub mod rust_format;
 pub mod system_info;
 pub mod whois_tool;
 pub mod xml_format;
+
