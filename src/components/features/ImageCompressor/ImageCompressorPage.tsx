@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSection } from "@/components/layout/PageSection";
+import { interactiveSelectedClassName, interactiveSelectedMutedTextClassName } from "@/lib/themeClasses";
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_IMAGE_COMPRESSION_OPTIONS,
@@ -153,12 +154,12 @@ export function ImageCompressorPage() {
                       className={cn(
                         "rounded-[1rem] border px-3 py-3 text-left transition",
                         options.targetFormat === format.value
-                          ? "border-slate-950 bg-slate-950 text-white dark:border-white dark:bg-white dark:text-slate-950"
-                          : "border-border/60 bg-background/70 hover:border-border hover:bg-background"
+                          ? interactiveSelectedClassName
+                          : "border-border/60 bg-background/70 hover:border-border hover:bg-accent/80"
                       )}
                     >
                       <div className="text-sm font-semibold">{format.label}</div>
-                      <div className={cn("mt-1 text-xs", options.targetFormat === format.value ? "text-white/75 dark:text-slate-700" : "text-muted-foreground")}>
+                      <div className={cn("mt-1 text-xs", options.targetFormat === format.value ? interactiveSelectedMutedTextClassName : "text-muted-foreground")}>
                         {format.description}
                       </div>
                     </button>

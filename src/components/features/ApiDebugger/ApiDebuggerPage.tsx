@@ -10,6 +10,10 @@ import { CodeHighlighter } from '@/components/ui/code-highlighter';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PageSection } from '@/components/layout/PageSection';
 import {
+  interactiveSelectedClassName,
+  interactiveSelectedMutedTextClassName,
+} from '@/lib/themeClasses';
+import {
   API_METHODS,
   createKeyValueRow,
   executeApiRequest,
@@ -100,15 +104,15 @@ function TreeNodeButton({
   return (
     <div
       className={`group flex items-center gap-2 rounded-xl border px-2 py-2 transition ${
-        active ? 'border-slate-950 bg-slate-950 text-white dark:border-white dark:bg-white dark:text-slate-950' : 'border-transparent bg-background/50 hover:border-border/60 hover:bg-background'
+        active ? interactiveSelectedClassName : 'border-transparent bg-background/50 hover:border-border/60 hover:bg-accent/70'
       }`}
       style={{ paddingLeft: `${8 + (depth ?? 0) * 18}px` }}
       onContextMenu={onContextMenu}
     >
       <button type="button" className="flex min-w-0 flex-1 items-center gap-2 text-left" onClick={onClick}>
-        <span className={active ? 'text-white/80 dark:text-slate-700' : 'text-muted-foreground'}>{icon}</span>
+        <span className={active ? interactiveSelectedMutedTextClassName : 'text-muted-foreground'}>{icon}</span>
         <span className="min-w-0 flex-1 truncate text-sm font-medium">{label}</span>
-        {meta ? <span className={`flex-shrink-0 text-[11px] ${active ? 'text-white/70 dark:text-slate-500' : 'text-muted-foreground'}`}>{meta}</span> : null}
+        {meta ? <span className={`flex-shrink-0 text-[11px] ${active ? interactiveSelectedMutedTextClassName : 'text-muted-foreground'}`}>{meta}</span> : null}
       </button>
       {action}
     </div>
@@ -599,7 +603,7 @@ export function ApiDebuggerPage() {
                     key={tab.id}
                     className={`flex items-center gap-2 rounded-xl border px-3 py-2 transition ${
                       tab.id === currentTabId
-                        ? 'border-slate-950 bg-slate-950 text-white dark:border-white dark:bg-white dark:text-slate-950'
+                        ? interactiveSelectedClassName
                         : 'border-border/60 bg-background/70'
                     }`}
                   >

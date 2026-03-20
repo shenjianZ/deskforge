@@ -9,6 +9,11 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
 import { WindowChrome } from "@/components/layout/WindowChrome";
+import {
+  interactiveSelectedClassName,
+  interactiveSelectedMutedTextClassName,
+  interactiveSelectedSoftSurfaceClassName,
+} from "@/lib/themeClasses";
 
 const iconMap = LucideIcons as unknown as Record<string, typeof AppWindow>;
 
@@ -44,13 +49,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="flex-1" />
 
             <div className="absolute left-1/2 hidden -translate-x-1/2 xl:flex xl:items-center xl:gap-2">
-              <Link to="/" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:bg-background hover:text-foreground")}>
+              <Link to="/" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/" ? interactiveSelectedClassName : "text-muted-foreground hover:bg-accent/70 hover:text-foreground")}>
                 首页
               </Link>
-              <Link to="/search" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/search" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:bg-background hover:text-foreground")}>
+              <Link to="/search" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/search" ? interactiveSelectedClassName : "text-muted-foreground hover:bg-accent/70 hover:text-foreground")}>
                 搜索
               </Link>
-              <Link to="/settings" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/settings" ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950" : "text-muted-foreground hover:bg-background hover:text-foreground")}>
+              <Link to="/settings" className={cn("rounded-full px-4 py-2 text-sm transition", location.pathname === "/settings" ? interactiveSelectedClassName : "text-muted-foreground hover:bg-accent/70 hover:text-foreground")}>
                 设置
               </Link>
             </div>
@@ -114,16 +119,16 @@ export function AppShell({ children }: { children: ReactNode }) {
                             className={cn(
                               "flex items-center gap-3 rounded-2xl px-3 py-3 text-sm transition",
                               active
-                                ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
-                                : "bg-background/70 text-muted-foreground hover:bg-background hover:text-foreground"
+                                ? interactiveSelectedClassName
+                                : "bg-background/70 text-muted-foreground hover:bg-accent/70 hover:text-foreground"
                             )}
                           >
-                            <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl border", active ? "border-white/10 bg-white/10 dark:border-slate-200 dark:bg-slate-100" : "border-border/60 bg-background")}>
+                            <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl border", active ? interactiveSelectedSoftSurfaceClassName : "border-border/60 bg-background")}>
                               <ItemIcon className="h-4 w-4" />
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="truncate font-medium">{item.name}</div>
-                              <div className={cn("truncate text-xs", active ? "text-white/68 dark:text-slate-600" : "text-muted-foreground")}>
+                              <div className={cn("truncate text-xs", active ? interactiveSelectedMutedTextClassName : "text-muted-foreground")}>
                                 {item.description}
                               </div>
                             </div>

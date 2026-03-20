@@ -27,6 +27,55 @@ import { cn } from '@/lib/utils';
 const MERMAID_THEME = 'neutral';
 
 const HTML_IMAGE_PATTERN = /<img\b([^>]*?)\bsrc=(['"])(.*?)\2([^>]*)>/gi;
+const PDF_MARGIN = 36;
+const PDF_BLOCK_GAP = 14;
+const PDF_TEXT_COLOR = '#111827';
+const PDF_MUTED_COLOR = '#6b7280';
+const PDF_BORDER_COLOR = '#d1d5db';
+const PDF_SOFT_BG = '#f8fafc';
+const PDF_QUOTE_BG = '#fff7ed';
+const PDF_QUOTE_BORDER = '#f59e0b';
+const PDF_CODE_BG = '#111827';
+const PDF_CODE_TEXT = '#f9fafb';
+const PDF_CJK_FONT_NAME = 'deskforge-cjk';
+
+type PdfDocument = InstanceType<typeof jsPDF>;
+
+type PdfRenderContext = {
+  pdf: PdfDocument;
+  cursorY: number;
+  pageWidth: number;
+  pageHeight: number;
+  contentWidth: number;
+  margin: number;
+};
+
+type ResolvedMarkdownPdfFont = {
+  family: string;
+  sourcePath: string;
+  dataBase64: string;
+};
+
+function getElementText(element: Element) {
+  const withInnerText = element as Element & { innerText?: string };
+  return (typeof withInnerText.innerText === 'string' ? withInnerText.innerText : element.textContent ?? '').trim();
+}
+
+let pdfFontReadyPromise: Promise<void> | null = null;
+
+async function ensurePdfCjkFont(pdf: PdfDocument) {
+  if (!pdfFontReadyPromise) {
+    pdfFontReadyPromise = invoke<ResolvedMarkdownPdfFont>('resolve_markdown_pdf_font')
+      .then((font) => {
+        const fontBinary = atob(font.dataBase64);
+        pdf.addFileToVFS('deskforge-cjk.ttf', fontBinary);
+        pdf.addFont('deskforge-cjk.ttf', PDF_CJK_FONT_NAME, 'normal');
+        pdf.addFont('deskforge-cjk.ttf', PDF_CJK_FONT_NAME, 'bold');
+      });
+  }
+
+  await pdfFontReadyPromise;
+}
 
 function collectStats(source: string): MarkdownPreviewStats {
   return {
@@ -205,6 +254,407 @@ function encodeBytesToBase64(bytes: Uint8Array) {
   return btoa(binary);
 }
 
+function getPdfContext(pdf: PdfDocument): PdfRenderContext {
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+
+  return {
+    pdf,
+    cursorY: PDF_MARGIN,
+    pageWidth,
+    pageHeight,
+    contentWidth: pageWidth - PDF_MARGIN * 2,
+    margin: PDF_MARGIN,
+  };
+}
+
+function getPdfBottom(ctx: PdfRenderContext) {
+  return ctx.pageHeight - ctx.margin;
+}
+
+function ensurePdfPageSpace(ctx: PdfRenderContext, heightNeeded: number) {
+  if (ctx.cursorY + heightNeeded <= getPdfBottom(ctx)) {
+    return;
+  }
+
+  ctx.pdf.addPage();
+  ctx.cursorY = ctx.margin;
+}
+
+function splitPdfText(pdf: PdfDocument, text: string, maxWidth: number) {
+  const normalized = text.replace(/\r\n/g, '\n').trim();
+  if (!normalized) {
+    return [];
+  }
+
+  return normalized
+    .split('\n')
+    .flatMap((line) => (line.trim() ? pdf.splitTextToSize(line, maxWidth) : ['']));
+}
+
+function getPdfLineBlockHeight(lineCount: number, fontSize: number, lineHeight = 1.6) {
+  return Math.max(lineCount, 1) * fontSize * lineHeight;
+}
+
+function renderPdfTextLines(
+  ctx: PdfRenderContext,
+  lines: string[],
+  options: {
+    fontSize: number;
+    color?: string;
+    x?: number;
+    lineHeight?: number;
+    font?: 'helvetica' | 'courier';
+    fontStyle?: 'normal' | 'bold';
+  }
+) {
+  const { fontSize, color = PDF_TEXT_COLOR, x = ctx.margin, lineHeight = 1.6, font = 'helvetica', fontStyle = 'normal' } = options;
+  if (!lines.length) {
+    return;
+  }
+
+  const lineStep = fontSize * lineHeight;
+  ctx.pdf.setFont(font === 'courier' ? 'courier' : PDF_CJK_FONT_NAME, font === 'courier' ? 'normal' : fontStyle);
+  ctx.pdf.setFontSize(fontSize);
+  ctx.pdf.setTextColor(color);
+
+  for (const line of lines) {
+    ensurePdfPageSpace(ctx, lineStep);
+    ctx.pdf.text(line || ' ', x, ctx.cursorY);
+    ctx.cursorY += lineStep;
+  }
+}
+
+function renderPdfParagraph(ctx: PdfRenderContext, text: string, fontSize = 11, color = PDF_TEXT_COLOR) {
+  const lines = splitPdfText(ctx.pdf, text, ctx.contentWidth);
+  renderPdfTextLines(ctx, lines, { fontSize, color });
+  ctx.cursorY += PDF_BLOCK_GAP;
+}
+
+function renderPdfHeading(ctx: PdfRenderContext, text: string, level: number) {
+  const fontSize = level === 1 ? 22 : level === 2 ? 18 : level === 3 ? 15 : 13;
+  const lines = splitPdfText(ctx.pdf, text, ctx.contentWidth);
+  const blockHeight = getPdfLineBlockHeight(lines.length, fontSize, 1.35) + (level <= 2 ? 18 : 8);
+  ensurePdfPageSpace(ctx, blockHeight);
+  renderPdfTextLines(ctx, lines, { fontSize, fontStyle: 'bold', lineHeight: 1.35 });
+
+  if (level <= 2) {
+    ctx.pdf.setDrawColor(PDF_BORDER_COLOR);
+    ctx.pdf.setLineWidth(0.8);
+    ctx.pdf.line(ctx.margin, ctx.cursorY + 2, ctx.margin + ctx.contentWidth, ctx.cursorY + 2);
+    ctx.cursorY += 10;
+  } else {
+    ctx.cursorY += 4;
+  }
+}
+
+function renderPdfRule(ctx: PdfRenderContext) {
+  ensurePdfPageSpace(ctx, 10);
+  ctx.pdf.setDrawColor(PDF_BORDER_COLOR);
+  ctx.pdf.setLineWidth(0.8);
+  ctx.pdf.line(ctx.margin, ctx.cursorY + 4, ctx.margin + ctx.contentWidth, ctx.cursorY + 4);
+  ctx.cursorY += 14;
+}
+
+function renderPdfList(ctx: PdfRenderContext, element: HTMLElement, ordered: boolean) {
+  const items = Array.from(element.querySelectorAll(':scope > li')) as HTMLElement[];
+  const bulletIndent = 16;
+  const textWidth = ctx.contentWidth - bulletIndent;
+
+  for (const [index, item] of items.entries()) {
+    const marker = ordered ? `${index + 1}.` : '•';
+    const lines = splitPdfText(ctx.pdf, getElementText(item), textWidth);
+    const blockHeight = getPdfLineBlockHeight(lines.length, 11);
+    ensurePdfPageSpace(ctx, blockHeight);
+
+    ctx.pdf.setFont('helvetica', 'normal');
+    ctx.pdf.setFontSize(11);
+    ctx.pdf.setTextColor(PDF_TEXT_COLOR);
+    ctx.pdf.text(marker, ctx.margin, ctx.cursorY);
+    renderPdfTextLines(ctx, lines, { fontSize: 11, x: ctx.margin + bulletIndent });
+    ctx.cursorY += 2;
+  }
+
+  ctx.cursorY += PDF_BLOCK_GAP;
+}
+
+function renderPdfQuote(ctx: PdfRenderContext, text: string) {
+  const innerPaddingX = 14;
+  const innerPaddingY = 12;
+  const quoteWidth = ctx.contentWidth;
+  const textWidth = quoteWidth - innerPaddingX * 2 - 6;
+  const lines = splitPdfText(ctx.pdf, text, textWidth);
+  const textHeight = getPdfLineBlockHeight(lines.length, 11);
+  const blockHeight = textHeight + innerPaddingY * 2;
+
+  ensurePdfPageSpace(ctx, blockHeight + PDF_BLOCK_GAP);
+  ctx.pdf.setFillColor(PDF_QUOTE_BG);
+  ctx.pdf.setDrawColor(PDF_QUOTE_BORDER);
+  ctx.pdf.roundedRect(ctx.margin, ctx.cursorY - 9, quoteWidth, blockHeight, 0, 10, 'F');
+  ctx.pdf.setFillColor(PDF_QUOTE_BORDER);
+  ctx.pdf.rect(ctx.margin, ctx.cursorY - 9, 4, blockHeight, 'F');
+  renderPdfTextLines(ctx, lines, {
+    fontSize: 11,
+    x: ctx.margin + innerPaddingX,
+    color: PDF_MUTED_COLOR,
+  });
+  ctx.cursorY += innerPaddingY + PDF_BLOCK_GAP - 9;
+}
+
+function renderPdfCodeBlock(ctx: PdfRenderContext, text: string) {
+  const fontSize = 10;
+  const lineHeight = 1.5;
+  const paddingX = 12;
+  const paddingY = 12;
+  const maxWidth = ctx.contentWidth - paddingX * 2;
+  const lines = text.replace(/\r\n/g, '\n').split('\n').flatMap((line) => ctx.pdf.splitTextToSize(line, maxWidth));
+  const totalHeight = getPdfLineBlockHeight(lines.length, fontSize, lineHeight) + paddingY * 2;
+
+  ensurePdfPageSpace(ctx, Math.min(totalHeight, getPdfBottom(ctx) - ctx.margin));
+  let remainingLines = [...lines];
+
+  while (remainingLines.length) {
+    const availableHeight = getPdfBottom(ctx) - ctx.cursorY;
+    const maxLines = Math.max(1, Math.floor((availableHeight - paddingY * 2) / (fontSize * lineHeight)));
+    const chunk = remainingLines.splice(0, maxLines);
+    const chunkHeight = getPdfLineBlockHeight(chunk.length, fontSize, lineHeight) + paddingY * 2;
+
+    ctx.pdf.setFillColor(PDF_CODE_BG);
+    ctx.pdf.roundedRect(ctx.margin, ctx.cursorY - 9, ctx.contentWidth, chunkHeight, 10, 10, 'F');
+    renderPdfTextLines(ctx, chunk, {
+      fontSize,
+      x: ctx.margin + paddingX,
+      color: PDF_CODE_TEXT,
+      font: 'courier',
+      lineHeight,
+    });
+    ctx.cursorY += paddingY + 5;
+
+    if (remainingLines.length) {
+      ctx.pdf.addPage();
+      ctx.cursorY = ctx.margin;
+    }
+  }
+
+  ctx.cursorY += PDF_BLOCK_GAP;
+}
+
+async function loadImageSize(src: string) {
+  return await new Promise<{ width: number; height: number }>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve({ width: image.naturalWidth || image.width, height: image.naturalHeight || image.height });
+    image.onerror = () => reject(new Error('图片加载失败'));
+    image.src = src;
+  });
+}
+
+function getPdfImageFormat(src: string) {
+  const normalized = src.toLowerCase();
+  if (normalized.startsWith('data:image/jpeg') || normalized.startsWith('data:image/jpg') || normalized.includes('.jpg') || normalized.includes('.jpeg')) {
+    return 'JPEG';
+  }
+  if (normalized.startsWith('data:image/webp') || normalized.includes('.webp')) {
+    return 'WEBP';
+  }
+  return 'PNG';
+}
+
+async function renderPdfImage(ctx: PdfRenderContext, src: string) {
+  const { width, height } = await loadImageSize(src);
+  const maxHeight = getPdfBottom(ctx) - ctx.margin;
+  const scale = Math.min(ctx.contentWidth / width, maxHeight / height, 1);
+  const renderWidth = width * scale;
+  const renderHeight = height * scale;
+
+  ensurePdfPageSpace(ctx, renderHeight + PDF_BLOCK_GAP);
+  ctx.pdf.addImage(src, getPdfImageFormat(src), ctx.margin, ctx.cursorY - 9, renderWidth, renderHeight, undefined, 'FAST');
+  ctx.cursorY += renderHeight + PDF_BLOCK_GAP;
+}
+
+async function renderPdfRasterBlock(ctx: PdfRenderContext, element: HTMLElement) {
+  const imageDataUrl = await toPng(element, {
+    cacheBust: true,
+    pixelRatio: 2,
+    backgroundColor: '#ffffff',
+  });
+
+  await renderPdfImage(ctx, imageDataUrl);
+}
+
+function measurePdfTableRows(ctx: PdfRenderContext, table: HTMLTableElement, columnWidth: number) {
+  const rows = Array.from(table.rows);
+
+  return rows.map((row) => {
+    const cells = Array.from(row.cells);
+    const cellLines = cells.map((cell) => splitPdfText(ctx.pdf, getElementText(cell), columnWidth - 20));
+    const rowHeight = Math.max(
+      ...cellLines.map((lines) => getPdfLineBlockHeight(lines.length, 10.5, 1.45) + 18),
+      28
+    );
+
+    return { row, cellLines, rowHeight };
+  });
+}
+
+function renderPdfTable(ctx: PdfRenderContext, tableWrap: HTMLElement) {
+  const table = tableWrap.querySelector('table');
+  if (!(table instanceof HTMLTableElement)) {
+    return;
+  }
+
+  const rows = Array.from(table.rows);
+  if (!rows.length) {
+    return;
+  }
+
+  const columnCount = Math.max(...rows.map((row) => row.cells.length), 1);
+  const columnWidth = ctx.contentWidth / columnCount;
+  const measuredRows = measurePdfTableRows(ctx, table, columnWidth);
+  const header = measuredRows[0];
+  const bodyRows = measuredRows.slice(1);
+
+  const drawRow = (rowData: (typeof measuredRows)[number], isHeader: boolean) => {
+    const rowTop = ctx.cursorY - 9;
+
+    if (isHeader) {
+      ctx.pdf.setFillColor(PDF_SOFT_BG);
+      ctx.pdf.rect(ctx.margin, rowTop, ctx.contentWidth, rowData.rowHeight, 'F');
+    }
+
+    ctx.pdf.setDrawColor(PDF_BORDER_COLOR);
+    ctx.pdf.rect(ctx.margin, rowTop, ctx.contentWidth, rowData.rowHeight);
+
+    rowData.cellLines.forEach((lines, columnIndex) => {
+      const x = ctx.margin + columnIndex * columnWidth;
+      if (columnIndex > 0) {
+        ctx.pdf.line(x, rowTop, x, rowTop + rowData.rowHeight);
+      }
+
+      renderPdfTextLines(
+        { ...ctx, cursorY: ctx.cursorY + 5 },
+        lines,
+        {
+          fontSize: 10.5,
+          x: x + 10,
+          lineHeight: 1.45,
+          fontStyle: isHeader ? 'bold' : 'normal',
+        }
+      );
+    });
+
+    ctx.cursorY += rowData.rowHeight;
+  };
+
+  ensurePdfPageSpace(ctx, header.rowHeight + 24);
+  drawRow(header, true);
+
+  for (const rowData of bodyRows) {
+    if (ctx.cursorY + rowData.rowHeight > getPdfBottom(ctx)) {
+      ctx.pdf.addPage();
+      ctx.cursorY = ctx.margin;
+      drawRow(header, true);
+    }
+
+    drawRow(rowData, false);
+  }
+
+  ctx.cursorY += PDF_BLOCK_GAP;
+}
+
+async function renderPdfElement(ctx: PdfRenderContext, element: HTMLElement): Promise<void> {
+  const tagName = element.tagName.toLowerCase();
+  const elementText = getElementText(element);
+
+  if (!elementText && tagName !== 'img' && !element.classList.contains('md-mermaid-wrap')) {
+    return;
+  }
+
+  if (/^h[1-6]$/.test(tagName)) {
+    renderPdfHeading(ctx, elementText, Number(tagName[1]));
+    return;
+  }
+
+  if (tagName === 'p') {
+    renderPdfParagraph(ctx, elementText);
+    return;
+  }
+
+  if (tagName === 'ul' || tagName === 'ol') {
+    renderPdfList(ctx, element, tagName === 'ol');
+    return;
+  }
+
+  if (tagName === 'blockquote') {
+    renderPdfQuote(ctx, elementText);
+    return;
+  }
+
+  if (tagName === 'pre') {
+    renderPdfCodeBlock(ctx, elementText);
+    return;
+  }
+
+  if (tagName === 'hr') {
+    renderPdfRule(ctx);
+    return;
+  }
+
+  if (tagName === 'img') {
+    const src = element.getAttribute('src');
+    if (src) {
+      await renderPdfImage(ctx, src);
+    }
+    return;
+  }
+
+  if (element.classList.contains('md-table-wrap')) {
+    renderPdfTable(ctx, element);
+    return;
+  }
+
+  if (element.classList.contains('md-footnotes')) {
+    renderPdfRule(ctx);
+    for (const child of Array.from(element.children) as HTMLElement[]) {
+      await renderPdfElement(ctx, child);
+    }
+    return;
+  }
+
+  if (element.classList.contains('md-mermaid-wrap')) {
+    await renderPdfRasterBlock(ctx, element);
+    return;
+  }
+
+  if (tagName === 'div' || tagName === 'section') {
+    for (const child of Array.from(element.children) as HTMLElement[]) {
+      await renderPdfElement(ctx, child);
+    }
+    return;
+  }
+
+  renderPdfParagraph(ctx, elementText);
+}
+
+async function exportMarkdownPreviewToPdf(root: HTMLElement) {
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'pt',
+    format: 'a4',
+  });
+  await ensurePdfCjkFont(pdf);
+  const ctx = getPdfContext(pdf);
+  pdf.setProperties({
+    title: 'Markdown 预览导出',
+    subject: 'DeskForge Markdown Preview',
+  });
+
+  for (const child of Array.from(root.children) as HTMLElement[]) {
+    await renderPdfElement(ctx, child);
+  }
+
+  return pdf.output('arraybuffer');
+}
+
 function MermaidBlock({ code }: { code: string }) {
   const [svg, setSvg] = useState('');
   const [error, setError] = useState('');
@@ -261,7 +711,7 @@ function MermaidBlock({ code }: { code: string }) {
 
 export function MarkdownPreviewPage() {
   const { wrapLongLines } = usePreferencesStore();
-  const [input, setInput] = useState(MARKDOWN_PREVIEW_EXAMPLE);
+  const [input, setInput] = useState('');
   const [activeView, setActiveView] = useState('preview');
   const [layoutMode, setLayoutMode] = useState<'split' | 'input' | 'preview'>('split');
   const [baseDir, setBaseDir] = useState('');
@@ -361,36 +811,7 @@ export function MarkdownPreviewPage() {
 
     setIsExportingPdf(true);
     try {
-      const imageDataUrl = await toPng(previewContentRef.current, {
-        cacheBust: true,
-        pixelRatio: 2,
-        backgroundColor: '#ffffff',
-      });
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'pt',
-        format: 'a4',
-      });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 24;
-      const imageProps = pdf.getImageProperties(imageDataUrl);
-      const renderWidth = pageWidth - margin * 2;
-      const renderHeight = (imageProps.height * renderWidth) / imageProps.width;
-      let remainingHeight = renderHeight;
-      let offsetY = margin;
-
-      pdf.addImage(imageDataUrl, 'PNG', margin, offsetY, renderWidth, renderHeight, undefined, 'FAST');
-      remainingHeight -= pageHeight - margin * 2;
-
-      while (remainingHeight > 0) {
-        pdf.addPage();
-        offsetY = margin - (renderHeight - remainingHeight);
-        pdf.addImage(imageDataUrl, 'PNG', margin, offsetY, renderWidth, renderHeight, undefined, 'FAST');
-        remainingHeight -= pageHeight - margin * 2;
-      }
-
-      const pdfBytes = pdf.output('arraybuffer');
+      const pdfBytes = await exportMarkdownPreviewToPdf(previewContentRef.current);
       await saveExportBytes(outputPath, new Uint8Array(pdfBytes));
     } finally {
       setIsExportingPdf(false);
@@ -674,7 +1095,7 @@ export function MarkdownPreviewPage() {
             <p>1. 脚注使用 GFM 语法，例如 `[^note]` 和 `[^note]: 内容`。</p>
             <p>2. Mermaid 代码块使用 `mermaid` 语言标记，预览和导出都会保留图表。</p>
             <p>3. 相对路径图片需要先选择资源根目录；绝对路径图片会直接解析为内嵌 data URL。</p>
-            <p>4. HTML 导出会保留当前预览样式；PDF 导出基于当前预览生成长图分页。</p>
+            <p>4. HTML 导出会保留当前预览样式；PDF 导出会按块分页生成，优先避免表格、引用块和标题区域被截断。</p>
           </CardContent>
         </Card>
       </div>

@@ -8,6 +8,11 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { usePreferencesStore } from "@/stores/preferencesStore";
 import { PageSection } from "@/components/layout/PageSection";
 import { cn } from "@/lib/utils";
+import {
+  interactiveSelectedClassName,
+  interactiveSelectedMutedTextClassName,
+  interactiveSelectedSoftSurfaceClassName,
+} from "@/lib/themeClasses";
 
 function SettingSegment<T extends string | number>({
   label,
@@ -32,8 +37,8 @@ function SettingSegment<T extends string | number>({
             className={cn(
               "rounded-full border px-4",
               value === option.value
-                ? "border-slate-950 bg-slate-950 text-white hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-950 dark:hover:bg-white/90"
-                : "border-border/60 bg-background/80 text-muted-foreground hover:text-foreground"
+                ? interactiveSelectedClassName
+                : "border-border/60 bg-background/80 text-muted-foreground hover:bg-accent/80 hover:text-foreground"
             )}
           >
             {option.label}
@@ -65,8 +70,8 @@ function ToggleChip({
       className={cn(
         "flex w-full items-center justify-between rounded-[1.2rem] border px-4 py-4 text-left transition",
         active
-          ? "border-slate-950 bg-slate-950 text-white shadow-[0_18px_40px_rgba(15,23,42,0.12)] dark:border-white dark:bg-white dark:text-slate-950"
-          : "border-border/60 bg-background/75 hover:border-border hover:bg-background",
+          ? interactiveSelectedClassName
+          : "border-border/60 bg-background/75 hover:border-border hover:bg-accent/80",
         disabled && "cursor-wait opacity-70"
       )}
     >
@@ -76,7 +81,7 @@ function ToggleChip({
         className={cn(
           "rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.18em]",
           active
-            ? "border-white/12 bg-white/8 text-white dark:border-slate-200 dark:bg-slate-100 dark:text-slate-700"
+            ? cn(interactiveSelectedSoftSurfaceClassName, interactiveSelectedMutedTextClassName)
             : "border-border/60 text-muted-foreground"
         )}
       >

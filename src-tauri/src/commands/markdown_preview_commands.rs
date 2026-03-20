@@ -3,7 +3,7 @@
 //! 定义 Markdown 资源解析与导出命令
 
 use crate::{
-    models::markdown_preview::ResolvedMarkdownAsset,
+    models::markdown_preview::{ResolvedMarkdownAsset, ResolvedMarkdownPdfFont},
     services::markdown_preview_service::MarkdownPreviewService,
 };
 
@@ -15,4 +15,9 @@ pub fn resolve_markdown_asset(asset_path: String, base_dir: Option<String>) -> R
 #[tauri::command]
 pub fn save_markdown_export(output_path: String, content_base64: String) -> Result<(), String> {
     MarkdownPreviewService::save_export(&output_path, &content_base64).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub fn resolve_markdown_pdf_font() -> Result<ResolvedMarkdownPdfFont, String> {
+    MarkdownPreviewService::resolve_pdf_font().map_err(|error| error.to_string())
 }

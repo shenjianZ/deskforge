@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { categories, type FeatureCategory } from "@/features/data";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
+import { interactiveSelectedClassName } from "@/lib/themeClasses";
 
 const iconMap = LucideIcons as unknown as Record<string, typeof LucideIcons.AppWindow>;
 
@@ -26,8 +27,8 @@ export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryF
             className={cn(
               "h-10 flex-shrink-0 rounded-full border px-4 text-sm transition",
               isSelected
-                ? "border-slate-950 bg-slate-950 text-white hover:bg-slate-800 dark:border-white dark:bg-white dark:text-slate-950 dark:hover:bg-white/90"
-                : "border-border/60 bg-background/75 text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
+                ? interactiveSelectedClassName
+                : "border-border/60 bg-background/75 text-muted-foreground hover:border-border hover:bg-accent/80 hover:text-foreground"
             )}
           >
             <IconComponent className="mr-2 h-4 w-4" />

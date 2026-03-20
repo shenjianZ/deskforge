@@ -176,6 +176,7 @@ pub fn run() {
             commands::image_converter_commands::generate_image_resize_preview,
             commands::image_converter_commands::save_resized_image,
             commands::markdown_preview_commands::resolve_markdown_asset,
+            commands::markdown_preview_commands::resolve_markdown_pdf_font,
             commands::markdown_preview_commands::save_markdown_export,
             // XML 格式化命令
             commands::xml_format_commands::format_xml,

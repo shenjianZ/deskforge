@@ -11,3 +11,11 @@ pub struct ResolvedMarkdownAsset {
     pub resolved_path: String,
     pub data_url: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ResolvedMarkdownPdfFont {
+    pub family: String,
+    pub source_path: String,
+    pub data_base64: String,
+}

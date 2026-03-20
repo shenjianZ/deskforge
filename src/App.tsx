@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppShell } from "@/components/layout/AppShell";
+import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { Home } from "@/pages/Home";
 import { Search } from "@/pages/Search";
 import Settings from "@/pages/Settings";
@@ -31,6 +32,7 @@ function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <div className="min-h-screen">
+        <ScrollToTop />
         <CommandPalette />
 
         <AppShell>

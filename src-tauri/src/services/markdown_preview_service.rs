@@ -8,7 +8,7 @@ use base64::{engine::general_purpose::STANDARD, Engine as _};
 
 use crate::{
     error::{AppError, AppResult},
-    models::markdown_preview::ResolvedMarkdownAsset,
+    models::markdown_preview::{ResolvedMarkdownAsset, ResolvedMarkdownPdfFont},
 };
 
 pub struct MarkdownPreviewService;
@@ -37,6 +37,21 @@ impl MarkdownPreviewService {
             .map_err(|error| AppError::InvalidData(format!("导出内容无效: {}", error)))?;
         fs::write(output_path, bytes).map_err(|error| AppError::IoError(format!("保存导出文件失败: {}", error)))?;
         Ok(())
+    }
+
+    pub fn resolve_pdf_font() -> AppResult<ResolvedMarkdownPdfFont> {
+        let candidate = find_pdf_font_candidate().ok_or_else(|| {
+            AppError::InvalidData("未找到可用于 PDF 导出的中文字体，请安装黑体、等线或宋体增强字体".to_string())
+        })?;
+
+        let bytes = fs::read(&candidate)
+            .map_err(|error| AppError::IoError(format!("读取 PDF 字体失败: {}", error)))?;
+
+        Ok(ResolvedMarkdownPdfFont {
+            family: "deskforge-cjk".to_string(),
+            source_path: normalize_display_path(&candidate),
+            data_base64: STANDARD.encode(bytes),
+        })
     }
 }
 
@@ -113,6 +128,49 @@ fn detect_mime_type(path: &Path, bytes: &[u8]) -> &'static str {
         Ok(image::ImageFormat::Ico) => "image/x-icon",
         _ => "application/octet-stream",
     }
+}
+
+fn find_pdf_font_candidate() -> Option<PathBuf> {
+    candidate_pdf_font_paths()
+        .into_iter()
+        .find(|path| path.exists() && path.is_file())
+}
+
+fn candidate_pdf_font_paths() -> Vec<PathBuf> {
+    #[cfg(windows)]
+    {
+        let windows_dir = std::env::var("WINDIR").unwrap_or_else(|_| "C:\\Windows".to_string());
+        let fonts_dir = Path::new(&windows_dir).join("Fonts");
+        return vec![
+            fonts_dir.join("simhei.ttf"),
+            fonts_dir.join("Deng.ttf"),
+            fonts_dir.join("Dengb.ttf"),
+            fonts_dir.join("simsunb.ttf"),
+            fonts_dir.join("HYZhongHeiTi-197.ttf"),
+        ];
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        return vec![
+            PathBuf::from("/System/Library/Fonts/Supplemental/Songti.ttc"),
+            PathBuf::from("/System/Library/Fonts/Supplemental/Arial Unicode.ttf"),
+            PathBuf::from("/System/Library/Fonts/PingFang.ttc"),
+        ];
+    }
+
+    #[cfg(all(unix, not(target_os = "macos")))]
+    {
+        return vec![
+            PathBuf::from("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"),
+            PathBuf::from("/usr/share/fonts/opentype/noto/NotoSansCJKSC-Regular.otf"),
+            PathBuf::from("/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc"),
+            PathBuf::from("/usr/share/fonts/truetype/arphic/uming.ttc"),
+        ];
+    }
+
+    #[allow(unreachable_code)]
+    Vec::new()
 }
 
 #[cfg(test)]
