@@ -21,6 +21,7 @@ interface KeycastDisplayPayload {
 interface KeycastOverlayConfig {
   x: number;
   y: number;
+  combo_window_ms: number;
   theme: KeycastTheme;
 }
 
@@ -119,6 +120,7 @@ export function KeycastPage() {
   const [config, setConfig] = useState<KeycastOverlayConfig>({
     x: 24,
     y: 24,
+    combo_window_ms: 500,
     theme: "keycaps-dark",
   });
 
@@ -199,13 +201,14 @@ export function KeycastPage() {
           </div>
           <div className="rounded-2xl border border-border/60 bg-background/70 p-5">
             <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Overlay</div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <Input value={config.x} type="number" onChange={(event) => updateField("x", event.target.value)} placeholder="X" />
               <Input value={config.y} type="number" onChange={(event) => updateField("y", event.target.value)} placeholder="Y" />
+              <Input value={config.combo_window_ms} type="number" onChange={(event) => updateField("combo_window_ms", event.target.value)} placeholder="组合键间隔(ms)" />
             </div>
             <div className="mt-4 flex items-center gap-3">
               <Button variant="outline" onClick={() => void applyOverlayConfig()}>应用设置</Button>
-              <div className="text-sm text-muted-foreground">设置显示坐标，单位为逻辑像素。</div>
+              <div className="text-sm text-muted-foreground">设置显示坐标和组合键判定间隔，单位为逻辑像素和毫秒。</div>
             </div>
           </div>
           <div className="space-y-2 text-sm text-muted-foreground">

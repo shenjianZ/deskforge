@@ -15,7 +15,7 @@ use crate::error::{AppError, AppResult};
 
 const KEYCAST_LABEL: &str = "keycast_overlay";
 const KEYCAST_CONFIG_FILE: &str = "keycast-overlay.json";
-const COMBO_WINDOW_MS: i64 = 220;
+const DEFAULT_COMBO_WINDOW_MS: i64 = 500;
 
 #[cfg(target_os = "windows")]
 use windows::Win32::UI::Input::KeyboardAndMouse::GetAsyncKeyState;
@@ -45,6 +45,8 @@ pub struct KeycastDisplayPayload {
 pub struct KeycastOverlayConfig {
     pub x: f64,
     pub y: f64,
+    #[serde(default = "default_combo_window_ms")]
+    pub combo_window_ms: i64,
     #[serde(default = "default_keycast_theme")]
     pub theme: String,
 }
@@ -65,9 +67,14 @@ impl Default for KeycastOverlayConfig {
         Self {
             x: 24.0,
             y: 24.0,
+            combo_window_ms: default_combo_window_ms(),
             theme: "keycaps-dark".to_string(),
         }
     }
+}
+
+fn default_combo_window_ms() -> i64 {
+    DEFAULT_COMBO_WINDOW_MS
 }
 
 fn default_keycast_theme() -> String {
@@ -83,12 +90,17 @@ struct KeySequenceTracker {
 }
 
 impl KeySequenceTracker {
-    fn handle(&mut self, virtual_key: u16, is_down: bool) -> Option<KeycastDisplayPayload> {
+    fn handle(
+        &mut self,
+        virtual_key: u16,
+        is_down: bool,
+        combo_window_ms: i64,
+    ) -> Option<KeycastDisplayPayload> {
         let now = Utc::now().timestamp_millis();
         let key = key_name(virtual_key)?;
         if is_modifier_key(&key) {
             return if is_down {
-                self.handle_modifier_down(key, now)
+                self.handle_modifier_down(key, now, combo_window_ms)
             } else {
                 self.handle_modifier_up()
             };
@@ -98,7 +110,7 @@ impl KeySequenceTracker {
             return None;
         }
 
-        if self.is_pending_stale(now) {
+        if self.is_pending_stale(now, combo_window_ms) {
             self.pending_modifiers.clear();
             self.pending_started_at = None;
         }
@@ -108,8 +120,13 @@ impl KeySequenceTracker {
         Some(build_payload(keys))
     }
 
-    fn handle_modifier_down(&mut self, key: String, now: i64) -> Option<KeycastDisplayPayload> {
-        if self.is_pending_stale(now) {
+    fn handle_modifier_down(
+        &mut self,
+        key: String,
+        now: i64,
+        combo_window_ms: i64,
+    ) -> Option<KeycastDisplayPayload> {
+        if self.is_pending_stale(now, combo_window_ms) {
             self.pending_modifiers.clear();
             self.pending_started_at = None;
         }
@@ -131,9 +148,9 @@ impl KeySequenceTracker {
         Some(build_payload(take_modifiers(&mut self.pending_modifiers)))
     }
 
-    fn is_pending_stale(&self, now: i64) -> bool {
+    fn is_pending_stale(&self, now: i64, combo_window_ms: i64) -> bool {
         self.pending_started_at
-            .map(|started_at| now - started_at > COMBO_WINDOW_MS)
+            .map(|started_at| now - started_at > combo_window_ms)
             .unwrap_or(false)
     }
 }
@@ -277,9 +294,10 @@ impl KeycastService {
             *guard = Some(stop_flag.clone());
         }
         let app_handle = app.clone();
+        let runtime_handle = runtime.clone();
         let worker = thread::spawn(move || {
             eprintln!("[keycast] worker: spawned");
-            Self::run_worker(app_handle, stop_flag);
+            Self::run_worker(app_handle, runtime_handle, stop_flag);
         });
         if let Ok(mut guard) = runtime.worker.lock() {
             *guard = Some(worker);
@@ -317,12 +335,17 @@ impl KeycastService {
         })
     }
 
-    fn run_worker(app: AppHandle, stop_flag: Arc<AtomicBool>) {
+    fn run_worker(app: AppHandle, runtime: KeycastRuntime, stop_flag: Arc<AtomicBool>) {
         #[cfg(target_os = "windows")]
         {
             let mut tracker = KeySequenceTracker::default();
             let mut pressed = [false; 256];
             while !stop_flag.load(Ordering::SeqCst) {
+                let combo_window_ms = runtime
+                    .overlay_config
+                    .lock()
+                    .map(|config| config.combo_window_ms)
+                    .unwrap_or(DEFAULT_COMBO_WINDOW_MS);
                 for vk in 1_u16..=254_u16 {
                     let is_down = is_virtual_key_down(vk);
                     let slot = &mut pressed[vk as usize];
@@ -330,7 +353,7 @@ impl KeycastService {
                         continue;
                     }
                     *slot = is_down;
-                    if let Some(payload) = tracker.handle(vk, is_down) {
+                    if let Some(payload) = tracker.handle(vk, is_down, combo_window_ms) {
                         let _ = app.emit("keycast:display", payload);
                     }
                 }
@@ -359,36 +382,41 @@ impl KeycastService {
         }
 
         eprintln!("[keycast] ensure_overlay_window: building");
-        WebviewWindowBuilder::new(app, KEYCAST_LABEL, WebviewUrl::App("keycast.html".into()))
-            .title("按键屏显")
-            .on_page_load(|window, payload| {
-                eprintln!(
-                    "[keycast] page_load: label={}, event={:?}, url={}",
-                    window.label(),
-                    payload.event(),
-                    payload.url()
-                );
-            })
-            .transparent(true)
-            .decorations(false)
-            .always_on_top(true)
-            .skip_taskbar(true)
-            .resizable(false)
-            .focused(false)
-            .visible(false)
-            .inner_size(560.0, 140.0)
-            .initialization_script(
-                r#"
+        let window =
+            WebviewWindowBuilder::new(app, KEYCAST_LABEL, WebviewUrl::App("keycast.html".into()))
+                .title("按键屏显")
+                .on_page_load(|window, payload| {
+                    eprintln!(
+                        "[keycast] page_load: label={}, event={:?}, url={}",
+                        window.label(),
+                        payload.event(),
+                        payload.url()
+                    );
+                })
+                .transparent(true)
+                .decorations(false)
+                .always_on_top(true)
+                .skip_taskbar(true)
+                .resizable(false)
+                .focused(false)
+                .visible(false)
+                .inner_size(560.0, 140.0)
+                .initialization_script(
+                    r#"
                 try {
                   document.documentElement.style.background = 'transparent';
                   document.body && (document.body.style.background = 'transparent');
                 } catch (_) {}
                 "#,
-            )
-            .build()
-            .map_err(|error| {
-                AppError::WindowOperationFailed(format!("创建按键屏显窗口失败: {}", error))
-            })?;
+                )
+                .build()
+                .map_err(|error| {
+                    AppError::WindowOperationFailed(format!("创建按键屏显窗口失败: {}", error))
+                })?;
+        #[cfg(target_os = "windows")]
+        window.set_shadow(false).map_err(|error| {
+            AppError::WindowOperationFailed(format!("关闭按键屏显窗口阴影失败: {}", error))
+        })?;
         eprintln!("[keycast] ensure_overlay_window: build ok");
 
         let config = Self::default_overlay_config(app, runtime)?;
@@ -471,6 +499,8 @@ impl KeycastService {
     }
 
     fn normalize_overlay_config(mut config: KeycastOverlayConfig) -> KeycastOverlayConfig {
+        config.combo_window_ms =
+            config.combo_window_ms.clamp(100, 2000);
         if !matches!(
             config.theme.as_str(),
             "keycaps-dark"

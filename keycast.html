@@ -51,9 +51,11 @@
       import { LogicalSize, getCurrentWindow } from "@tauri-apps/api/window";
       const currentWindow = getCurrentWindow();
       const wrap = document.getElementById("wrap");
+      const accent = document.getElementById("accent");
       const text = document.getElementById("text");
       const tokens = document.getElementById("tokens");
       const FIXED_WINDOW_WIDTH = 350;
+      const DEFAULT_ACCENT_WIDTH = 84;
       let hideTimer = 0;
       const tokenThemes = new Set(["keycaps-dark", "keycaps-light"]);
       function applyTheme(theme) {
@@ -71,6 +73,12 @@
           tokens.appendChild(item);
         });
       }
+      function syncAccentWidth() {
+        const range = document.createRange();
+        range.selectNodeContents(text);
+        const textWidth = Math.ceil(range.getBoundingClientRect().width);
+        accent.style.width = `${Math.max(DEFAULT_ACCENT_WIDTH, textWidth)}px`;
+      }
       async function syncWindowSize() {
         await new Promise((resolve) => window.requestAnimationFrame(resolve));
         const rect = wrap.getBoundingClientRect();
@@ -81,6 +89,7 @@
       async function show(content) {
         text.textContent = content;
         renderTokens(content);
+        syncAccentWidth();
         await syncWindowSize();
         wrap.classList.add("visible");
         window.clearTimeout(hideTimer);
