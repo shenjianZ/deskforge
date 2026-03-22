@@ -11,8 +11,8 @@ use reqwest::{
 use crate::{
     error::{AppError, AppResult},
     models::api_debugger::{
-        ApiAuthConfig, ApiBodyMode, ApiEnvironment, ApiKeyPlacement, ApiKeyValueRow, ApiRawBodyType,
-        ApiRequestDraft, ApiRequestMethod, ApiResponseSnapshot,
+        ApiAuthConfig, ApiBodyMode, ApiEnvironment, ApiKeyPlacement, ApiKeyValueRow,
+        ApiRawBodyType, ApiRequestDraft, ApiRequestMethod, ApiResponseSnapshot,
     },
 };
 
@@ -45,7 +45,9 @@ impl ApiDebuggerService {
         let client = Client::builder()
             .timeout(Duration::from_millis(timeout_ms))
             .build()
-            .map_err(|error| AppError::NetworkRequestFailed(format!("HTTP 客户端创建失败: {}", error)))?;
+            .map_err(|error| {
+                AppError::NetworkRequestFailed(format!("HTTP 客户端创建失败: {}", error))
+            })?;
 
         let started_at = Instant::now();
         let response = client
@@ -54,7 +56,9 @@ impl ApiDebuggerService {
             .body(request_body.clone().unwrap_or_default())
             .send()
             .await
-            .map_err(|error| AppError::NetworkRequestFailed(Self::normalize_reqwest_error(error)))?;
+            .map_err(|error| {
+                AppError::NetworkRequestFailed(Self::normalize_reqwest_error(error))
+            })?;
 
         let status = response.status();
         let status_text = status
@@ -157,15 +161,22 @@ impl ApiDebuggerService {
         Ok(url)
     }
 
-    fn build_headers(request: &ApiRequestDraft, variables: &[(String, String)]) -> AppResult<HeaderMap> {
+    fn build_headers(
+        request: &ApiRequestDraft,
+        variables: &[(String, String)],
+    ) -> AppResult<HeaderMap> {
         let mut headers = HeaderMap::new();
 
         for row in &request.headers {
             if row.enabled && !row.key.trim().is_empty() {
-                let key = HeaderName::from_bytes(Self::resolve_template(row.key.trim(), variables).as_bytes())
-                    .map_err(|error| AppError::InvalidData(format!("Header 名称无效: {}", error)))?;
+                let key = HeaderName::from_bytes(
+                    Self::resolve_template(row.key.trim(), variables).as_bytes(),
+                )
+                .map_err(|error| AppError::InvalidData(format!("Header 名称无效: {}", error)))?;
                 let value = HeaderValue::from_str(&Self::resolve_template(&row.value, variables))
-                    .map_err(|error| AppError::InvalidData(format!("Header 值无效: {}", error)))?;
+                    .map_err(|error| {
+                    AppError::InvalidData(format!("Header 值无效: {}", error))
+                })?;
                 headers.insert(key, value);
             }
         }
@@ -182,8 +193,11 @@ impl ApiDebuggerService {
         match &request.auth {
             ApiAuthConfig::None => {}
             ApiAuthConfig::Bearer { token } => {
-                let value = HeaderValue::from_str(&format!("Bearer {}", Self::resolve_template(token, variables)))
-                    .map_err(|error| AppError::InvalidData(format!("Bearer Token 无效: {}", error)))?;
+                let value = HeaderValue::from_str(&format!(
+                    "Bearer {}",
+                    Self::resolve_template(token, variables)
+                ))
+                .map_err(|error| AppError::InvalidData(format!("Bearer Token 无效: {}", error)))?;
                 headers.insert(AUTHORIZATION, value);
             }
             ApiAuthConfig::Basic { username, password } => {
@@ -192,8 +206,10 @@ impl ApiDebuggerService {
                     Self::resolve_template(username, variables),
                     Self::resolve_template(password, variables)
                 ));
-                let value = HeaderValue::from_str(&format!("Basic {}", encoded))
-                    .map_err(|error| AppError::InvalidData(format!("Basic Auth 无效: {}", error)))?;
+                let value =
+                    HeaderValue::from_str(&format!("Basic {}", encoded)).map_err(|error| {
+                        AppError::InvalidData(format!("Basic Auth 无效: {}", error))
+                    })?;
                 headers.insert(AUTHORIZATION, value);
             }
             ApiAuthConfig::ApiKey {
@@ -205,10 +221,13 @@ impl ApiDebuggerService {
                 let value = Self::resolve_template(value, variables);
                 match placement {
                     ApiKeyPlacement::Header => {
-                        let header_name = HeaderName::from_bytes(key.as_bytes())
-                            .map_err(|error| AppError::InvalidData(format!("API Key 名称无效: {}", error)))?;
-                        let header_value = HeaderValue::from_str(&value)
-                            .map_err(|error| AppError::InvalidData(format!("API Key 值无效: {}", error)))?;
+                        let header_name =
+                            HeaderName::from_bytes(key.as_bytes()).map_err(|error| {
+                                AppError::InvalidData(format!("API Key 名称无效: {}", error))
+                            })?;
+                        let header_value = HeaderValue::from_str(&value).map_err(|error| {
+                            AppError::InvalidData(format!("API Key 值无效: {}", error))
+                        })?;
                         headers.insert(header_name, header_value);
                     }
                     ApiKeyPlacement::Query => {
@@ -267,17 +286,34 @@ impl ApiDebuggerService {
         }
     }
 
-    fn build_curl(request: &ApiRequestDraft, url: &Url, headers: &HeaderMap, body: Option<&str>) -> String {
-        let mut parts = vec![format!("curl -X {}", Self::map_method(&request.method)), format!("\"{}\"", url)];
+    fn build_curl(
+        request: &ApiRequestDraft,
+        url: &Url,
+        headers: &HeaderMap,
+        body: Option<&str>,
+    ) -> String {
+        let mut parts = vec![
+            format!("curl -X {}", Self::map_method(&request.method)),
+            format!("\"{}\"", url),
+        ];
 
         for (key, value) in headers.iter() {
             if let Ok(value) = value.to_str() {
-                parts.push(format!("-H \"{}: {}\"", key.as_str(), value.replace('"', "\\\"")));
+                parts.push(format!(
+                    "-H \"{}: {}\"",
+                    key.as_str(),
+                    value.replace('"', "\\\"")
+                ));
             }
         }
 
         if let Some(body) = body {
-            if !body.is_empty() && !matches!(request.method, ApiRequestMethod::Get | ApiRequestMethod::Head) {
+            if !body.is_empty()
+                && !matches!(
+                    request.method,
+                    ApiRequestMethod::Get | ApiRequestMethod::Head
+                )
+            {
                 parts.push(format!("--data-raw \"{}\"", body.replace('"', "\\\"")));
             }
         }

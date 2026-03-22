@@ -8,12 +8,11 @@ use crate::services::html_format_service::HtmlFormatService;
 /// 格式化 HTML 命令
 #[tauri::command]
 pub fn format_html(input: String, config: HtmlFormatConfig) -> HtmlFormatResult {
-    HtmlFormatService::format(&input, &config)
-        .unwrap_or_else(|e| HtmlFormatResult {
-            success: false,
-            result: String::new(),
-            error: Some(e.to_string()),
-        })
+    HtmlFormatService::format(&input, &config).unwrap_or_else(|e| HtmlFormatResult {
+        success: false,
+        result: String::new(),
+        error: Some(e.to_string()),
+    })
 }
 
 /// 验证 HTML 命令

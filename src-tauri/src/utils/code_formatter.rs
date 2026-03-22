@@ -320,8 +320,9 @@ fn generic_compact(input: &str) -> Result<String, String> {
 
         // 压缩空格和换行
         if c.is_whitespace() {
-            if !result.is_empty() && !result.ends_with(' ') &&
-               prev_char.is_ascii_alphanumeric() || prev_char == '_' {
+            if !result.is_empty() && !result.ends_with(' ') && prev_char.is_ascii_alphanumeric()
+                || prev_char == '_'
+            {
                 result.push(' ');
             }
             prev_char = c;

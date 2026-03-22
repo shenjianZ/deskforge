@@ -63,6 +63,16 @@ pub enum AppError {
     ///
     /// 表示 API 调试工具在发送请求时失败
     NetworkRequestFailed(String),
+
+    /// 数据库错误
+    ///
+    /// 表示 SQLite 读写或初始化失败
+    DatabaseError(String),
+
+    /// 调度任务失败
+    ///
+    /// 表示定时任务计算、执行或恢复失败
+    SchedulerError(String),
 }
 
 impl fmt::Display for AppError {
@@ -79,6 +89,8 @@ impl fmt::Display for AppError {
             AppError::IoError(msg) => write!(f, "IO 错误: {}", msg),
             AppError::QrCodeGenerationFailed(msg) => write!(f, "二维码生成失败: {}", msg),
             AppError::NetworkRequestFailed(msg) => write!(f, "网络请求失败: {}", msg),
+            AppError::DatabaseError(msg) => write!(f, "数据库错误: {}", msg),
+            AppError::SchedulerError(msg) => write!(f, "调度错误: {}", msg),
         }
     }
 }

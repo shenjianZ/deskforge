@@ -35,13 +35,19 @@ pub fn parse_ipwhois_response(ip: String, body: &str) -> Result<PublicIpInfo, Ap
         current_ip: Some(ip),
         ipv4: None,
         ipv6: None,
-        country: value.get("country").and_then(Value::as_str).map(ToOwned::to_owned),
+        country: value
+            .get("country")
+            .and_then(Value::as_str)
+            .map(ToOwned::to_owned),
         region: value
             .get("region")
             .or_else(|| value.get("region_name"))
             .and_then(Value::as_str)
             .map(ToOwned::to_owned),
-        city: value.get("city").and_then(Value::as_str).map(ToOwned::to_owned),
+        city: value
+            .get("city")
+            .and_then(Value::as_str)
+            .map(ToOwned::to_owned),
         timezone: value
             .get("timezone")
             .and_then(|timezone| {
@@ -51,7 +57,12 @@ pub fn parse_ipwhois_response(ip: String, body: &str) -> Result<PublicIpInfo, Ap
                     .and_then(Value::as_str)
             })
             .map(ToOwned::to_owned)
-            .or_else(|| value.get("timezone").and_then(Value::as_str).map(ToOwned::to_owned)),
+            .or_else(|| {
+                value
+                    .get("timezone")
+                    .and_then(Value::as_str)
+                    .map(ToOwned::to_owned)
+            }),
         asn: value
             .get("connection")
             .and_then(|connection| connection.get("asn"))

@@ -17,7 +17,7 @@ pub mod markdown_preview;
 pub mod public_ip_tool;
 pub mod qrcode;
 pub mod rust_format;
+pub mod scheduler;
 pub mod system_info;
 pub mod whois_tool;
 pub mod xml_format;
-

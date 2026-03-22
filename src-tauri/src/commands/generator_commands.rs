@@ -4,9 +4,10 @@
 
 use crate::{
     models::generator::{
-        ApiKeyGenerateOptions, GeneratorItemsResult, HashGenerateOptions, HashGenerateResult, IdentityGenerateOptions,
-        JwtDecodeOptions, JwtDecodeResult, JwtGenerateOptions, JwtGenerateResult, NanoIdGenerateOptions,
-        PasswordGenerateOptions, PaymentCardGenerateOptions, RandomValueGenerateOptions, UserDataGenerateOptions,
+        ApiKeyGenerateOptions, GeneratorItemsResult, HashGenerateOptions, HashGenerateResult,
+        IdentityGenerateOptions, JwtDecodeOptions, JwtDecodeResult, JwtGenerateOptions,
+        JwtGenerateResult, NanoIdGenerateOptions, PasswordGenerateOptions,
+        PaymentCardGenerateOptions, RandomValueGenerateOptions, UserDataGenerateOptions,
         UserDataGenerateResult, UserProfileGenerateOptions, UuidGenerateOptions,
     },
     services::generator_service::GeneratorService,
@@ -23,7 +24,9 @@ pub fn generate_nanoid(options: NanoIdGenerateOptions) -> Result<GeneratorItemsR
 }
 
 #[tauri::command]
-pub fn generate_random_value(options: RandomValueGenerateOptions) -> Result<GeneratorItemsResult, String> {
+pub fn generate_random_value(
+    options: RandomValueGenerateOptions,
+) -> Result<GeneratorItemsResult, String> {
     GeneratorService::generate_random_value(&options).map_err(|error| error.to_string())
 }
 
@@ -53,36 +56,50 @@ pub fn decode_jwt_mock(options: JwtDecodeOptions) -> Result<JwtDecodeResult, Str
 }
 
 #[tauri::command]
-pub fn generate_user_persona(options: UserDataGenerateOptions) -> Result<UserDataGenerateResult, String> {
+pub fn generate_user_persona(
+    options: UserDataGenerateOptions,
+) -> Result<UserDataGenerateResult, String> {
     GeneratorService::generate_user_persona(&options).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
-pub fn generate_user_contact(options: UserDataGenerateOptions) -> Result<UserDataGenerateResult, String> {
+pub fn generate_user_contact(
+    options: UserDataGenerateOptions,
+) -> Result<UserDataGenerateResult, String> {
     GeneratorService::generate_user_contact(&options).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
-pub fn generate_user_address(options: UserDataGenerateOptions) -> Result<UserDataGenerateResult, String> {
+pub fn generate_user_address(
+    options: UserDataGenerateOptions,
+) -> Result<UserDataGenerateResult, String> {
     GeneratorService::generate_user_address(&options).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
-pub fn generate_user_company(options: UserDataGenerateOptions) -> Result<UserDataGenerateResult, String> {
+pub fn generate_user_company(
+    options: UserDataGenerateOptions,
+) -> Result<UserDataGenerateResult, String> {
     GeneratorService::generate_user_company(&options).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
-pub fn generate_identity_document(options: IdentityGenerateOptions) -> Result<UserDataGenerateResult, String> {
+pub fn generate_identity_document(
+    options: IdentityGenerateOptions,
+) -> Result<UserDataGenerateResult, String> {
     GeneratorService::generate_identity_document(&options).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
-pub fn generate_payment_card(options: PaymentCardGenerateOptions) -> Result<UserDataGenerateResult, String> {
+pub fn generate_payment_card(
+    options: PaymentCardGenerateOptions,
+) -> Result<UserDataGenerateResult, String> {
     GeneratorService::generate_payment_card(&options).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
-pub fn generate_user_profile(options: UserProfileGenerateOptions) -> Result<UserDataGenerateResult, String> {
+pub fn generate_user_profile(
+    options: UserProfileGenerateOptions,
+) -> Result<UserDataGenerateResult, String> {
     GeneratorService::generate_user_profile(&options).map_err(|error| error.to_string())
 }

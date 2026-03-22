@@ -2,8 +2,8 @@
 //!
 //! 定义 Rust 格式化工具使用的数据结构
 
-use serde::{Deserialize, Serialize};
 use super::code_format::FormatMode;
+use serde::{Deserialize, Serialize};
 
 /// Rust 格式化配置
 #[derive(Debug, Clone, Serialize, Deserialize)]

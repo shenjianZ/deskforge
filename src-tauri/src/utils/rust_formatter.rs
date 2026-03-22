@@ -22,12 +22,8 @@ pub fn format_rust(input: &str, config: &RustFormatConfig) -> Result<String, Str
     }
 
     match config.mode {
-        crate::models::code_format::FormatMode::Pretty => {
-            prettify_rust(input, config)
-        }
-        crate::models::code_format::FormatMode::Compact => {
-            compact_rust(input)
-        }
+        crate::models::code_format::FormatMode::Pretty => prettify_rust(input, config),
+        crate::models::code_format::FormatMode::Compact => compact_rust(input),
     }
 }
 
@@ -36,8 +32,7 @@ fn prettify_rust(input: &str, config: &RustFormatConfig) -> Result<String, Strin
     use syn::parse_file;
 
     // 使用 syn 解析代码
-    let _ast = parse_file(input)
-        .map_err(|e| format!("Rust 解析失败: {}", e))?;
+    let _ast = parse_file(input).map_err(|e| format!("Rust 解析失败: {}", e))?;
 
     // syn 可以解析，现在使用 prettyplease 进行格式化
     // 如果 prettyplease 不可用，使用增强的通用格式化
@@ -180,8 +175,11 @@ fn enhanced_rust_prettify(input: &str, config: &RustFormatConfig) -> Result<Stri
             '<' | '>' | '=' | '!' | '+' | '-' | '*' | '/' | '%' | '&' | '|' | '^' => {
                 // 操作符前后加空格
                 result.push(c);
-                if matches!(c, '<' | '>' | '=' | '!' | '+' | '-' | '*' | '/' | '%' | '&' | '|' | '^')
-                    && !result.ends_with(' ') {
+                if matches!(
+                    c,
+                    '<' | '>' | '=' | '!' | '+' | '-' | '*' | '/' | '%' | '&' | '|' | '^'
+                ) && !result.ends_with(' ')
+                {
                     result.push(' ');
                 }
             }
@@ -265,8 +263,10 @@ fn compact_rust(input: &str) -> Result<String, String> {
 
         // 压缩空格和换行
         if c.is_whitespace() {
-            if !result.is_empty() && !result.ends_with(' ') &&
-               (prev_char.is_ascii_alphanumeric() || prev_char == '_') {
+            if !result.is_empty()
+                && !result.ends_with(' ')
+                && (prev_char.is_ascii_alphanumeric() || prev_char == '_')
+            {
                 result.push(' ');
             }
             prev_char = c;

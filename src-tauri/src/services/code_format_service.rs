@@ -57,7 +57,10 @@ impl CodeFormatService {
     /// # 返回
     ///
     /// 返回验证结果
-    pub fn validate(input: &str, language: crate::models::code_format::CodeLanguage) -> AppResult<CodeValidateResult> {
+    pub fn validate(
+        input: &str,
+        language: crate::models::code_format::CodeLanguage,
+    ) -> AppResult<CodeValidateResult> {
         let result = code_formatter::validate_code(input, language);
         Ok(CodeValidateResult {
             is_valid: result.is_valid,

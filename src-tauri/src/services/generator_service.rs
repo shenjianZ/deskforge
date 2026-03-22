@@ -13,21 +13,26 @@ use uuid::Uuid;
 use crate::{
     error::{AppError, AppResult},
     models::generator::{
-        ApiKeyGenerateOptions, CountryPreset, GeneratorItemsResult, HashAlgorithm, HashGenerateOptions, HashGenerateResult,
-        IdentityGenerateOptions, JwtDecodeOptions, JwtDecodeResult, JwtGenerateOptions, JwtGenerateResult,
-        NanoIdGenerateOptions, PasswordGenerateOptions, PaymentCardGenerateOptions, RandomValueGenerateOptions,
-        RandomValueMode, UserDataGenerateOptions, UserDataGenerateResult, UserProfileGenerateOptions, UuidGenerateOptions,
+        ApiKeyGenerateOptions, CountryPreset, GeneratorItemsResult, HashAlgorithm,
+        HashGenerateOptions, HashGenerateResult, IdentityGenerateOptions, JwtDecodeOptions,
+        JwtDecodeResult, JwtGenerateOptions, JwtGenerateResult, NanoIdGenerateOptions,
+        PasswordGenerateOptions, PaymentCardGenerateOptions, RandomValueGenerateOptions,
+        RandomValueMode, UserDataGenerateOptions, UserDataGenerateResult,
+        UserProfileGenerateOptions, UuidGenerateOptions,
     },
 };
 
 type HmacSha256 = Hmac<Sha256>;
 
-const DEFAULT_NANOID_ALPHABET: &str = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
+const DEFAULT_NANOID_ALPHABET: &str =
+    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
 const SYMBOLS: &str = "!@#$%^&*()-_=+[]{};:,.?/";
 const SIMILAR_CHARS: &str = "0O1lI";
 
 const CN_SURNAMES: &[&str] = &["王", "李", "张", "刘", "陈", "杨", "黄", "赵", "周", "吴"];
-const CN_GIVEN: &[&str] = &["伟", "芳", "娜", "敏", "静", "秀英", "磊", "洋", "勇", "艳", "杰", "婷"];
+const CN_GIVEN: &[&str] = &[
+    "伟", "芳", "娜", "敏", "静", "秀英", "磊", "洋", "勇", "艳", "杰", "婷",
+];
 const CN_REGIONS: &[(&str, &str, &str, &str)] = &[
     ("北京市", "北京市", "朝阳区", "100020"),
     ("上海市", "上海市", "浦东新区", "200120"),
@@ -35,13 +40,36 @@ const CN_REGIONS: &[(&str, &str, &str, &str)] = &[
     ("浙江省", "杭州市", "西湖区", "310000"),
     ("四川省", "成都市", "高新区", "610000"),
 ];
-const CN_STREETS: &[&str] = &["建国路", "人民路", "中山路", "解放大道", "科技园路", "创新大道"];
+const CN_STREETS: &[&str] = &[
+    "建国路",
+    "人民路",
+    "中山路",
+    "解放大道",
+    "科技园路",
+    "创新大道",
+];
 const CN_COMPANY_PREFIX: &[&str] = &["云启", "星河", "极光", "海纳", "远景", "腾跃"];
-const CN_COMPANY_SUFFIX: &[&str] = &["科技有限公司", "信息技术有限公司", "网络科技有限公司", "电子商务有限公司"];
-const CN_JOBS: &[&str] = &["产品经理", "前端工程师", "后端工程师", "运营经理", "测试工程师", "数据分析师"];
+const CN_COMPANY_SUFFIX: &[&str] = &[
+    "科技有限公司",
+    "信息技术有限公司",
+    "网络科技有限公司",
+    "电子商务有限公司",
+];
+const CN_JOBS: &[&str] = &[
+    "产品经理",
+    "前端工程师",
+    "后端工程师",
+    "运营经理",
+    "测试工程师",
+    "数据分析师",
+];
 
-const US_FIRST_NAMES: &[&str] = &["James", "Olivia", "Liam", "Emma", "Noah", "Sophia", "Mason", "Ava", "Ethan", "Isabella"];
-const US_LAST_NAMES: &[&str] = &["Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Wilson"];
+const US_FIRST_NAMES: &[&str] = &[
+    "James", "Olivia", "Liam", "Emma", "Noah", "Sophia", "Mason", "Ava", "Ethan", "Isabella",
+];
+const US_LAST_NAMES: &[&str] = &[
+    "Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Wilson",
+];
 const US_REGIONS: &[(&str, &str, &str)] = &[
     ("California", "San Francisco", "94105"),
     ("New York", "New York", "10001"),
@@ -49,21 +77,57 @@ const US_REGIONS: &[(&str, &str, &str)] = &[
     ("Washington", "Seattle", "98101"),
     ("Illinois", "Chicago", "60601"),
 ];
-const US_STREETS: &[&str] = &["Market Street", "Broadway", "Main Street", "Sunset Blvd", "Oak Avenue"];
-const US_COMPANIES: &[&str] = &["NorthPeak Labs", "BrightCloud Inc.", "Blue Harbor Systems", "Summit Data Works"];
-const US_JOBS: &[&str] = &["Software Engineer", "Marketing Manager", "QA Analyst", "Account Executive", "Product Designer"];
+const US_STREETS: &[&str] = &[
+    "Market Street",
+    "Broadway",
+    "Main Street",
+    "Sunset Blvd",
+    "Oak Avenue",
+];
+const US_COMPANIES: &[&str] = &[
+    "NorthPeak Labs",
+    "BrightCloud Inc.",
+    "Blue Harbor Systems",
+    "Summit Data Works",
+];
+const US_JOBS: &[&str] = &[
+    "Software Engineer",
+    "Marketing Manager",
+    "QA Analyst",
+    "Account Executive",
+    "Product Designer",
+];
 
-const UK_FIRST_NAMES: &[&str] = &["Oliver", "George", "Harry", "Amelia", "Isla", "Ava", "Jack", "Emily"];
-const UK_LAST_NAMES: &[&str] = &["Taylor", "Davies", "Evans", "Thomas", "Roberts", "Walker", "Wright"];
+const UK_FIRST_NAMES: &[&str] = &[
+    "Oliver", "George", "Harry", "Amelia", "Isla", "Ava", "Jack", "Emily",
+];
+const UK_LAST_NAMES: &[&str] = &[
+    "Taylor", "Davies", "Evans", "Thomas", "Roberts", "Walker", "Wright",
+];
 const UK_REGIONS: &[(&str, &str, &str)] = &[
     ("Greater London", "London", "SW1A 1AA"),
     ("Greater Manchester", "Manchester", "M1 1AE"),
     ("West Midlands", "Birmingham", "B1 1TB"),
     ("West Yorkshire", "Leeds", "LS1 1UR"),
 ];
-const UK_STREETS: &[&str] = &["Baker Street", "King's Road", "High Street", "Victoria Road", "Station Lane"];
-const UK_COMPANIES: &[&str] = &["Thames Digital Ltd", "Northbridge Analytics Ltd", "Albion Commerce Ltd"];
-const UK_JOBS: &[&str] = &["Operations Lead", "Frontend Developer", "Customer Success Manager", "Data Engineer"];
+const UK_STREETS: &[&str] = &[
+    "Baker Street",
+    "King's Road",
+    "High Street",
+    "Victoria Road",
+    "Station Lane",
+];
+const UK_COMPANIES: &[&str] = &[
+    "Thames Digital Ltd",
+    "Northbridge Analytics Ltd",
+    "Albion Commerce Ltd",
+];
+const UK_JOBS: &[&str] = &[
+    "Operations Lead",
+    "Frontend Developer",
+    "Customer Success Manager",
+    "Data Engineer",
+];
 
 const JP_FAMILY_NAMES: &[&str] = &["佐藤", "铃木", "高桥", "田中", "伊藤", "渡边", "山本"];
 const JP_GIVEN_NAMES: &[&str] = &["翔太", "阳菜", "结衣", "莲", "美咲", "大和", "葵"];
@@ -74,19 +138,43 @@ const JP_REGIONS: &[(&str, &str, &str, &str)] = &[
     ("福冈县", "福冈市", "博多区", "812-0011"),
 ];
 const JP_COMPANIES: &[&str] = &["樱桥科技株式会社", "未来数据株式会社", "东海系统株式会社"];
-const JP_JOBS: &[&str] = &["プロダクトマネージャー", "ソフトウェアエンジニア", "データアナリスト", "QAエンジニア"];
+const JP_JOBS: &[&str] = &[
+    "プロダクトマネージャー",
+    "ソフトウェアエンジニア",
+    "データアナリスト",
+    "QAエンジニア",
+];
 
 const DE_FIRST_NAMES: &[&str] = &["Max", "Paul", "Ben", "Anna", "Mia", "Emma", "Leon", "Lina"];
-const DE_LAST_NAMES: &[&str] = &["Muller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner"];
+const DE_LAST_NAMES: &[&str] = &[
+    "Muller",
+    "Schmidt",
+    "Schneider",
+    "Fischer",
+    "Weber",
+    "Meyer",
+    "Wagner",
+];
 const DE_REGIONS: &[(&str, &str, &str)] = &[
     ("Bayern", "Munchen", "80331"),
     ("Berlin", "Berlin", "10115"),
     ("Nordrhein-Westfalen", "Koln", "50667"),
     ("Hamburg", "Hamburg", "20095"),
 ];
-const DE_STREETS: &[&str] = &["Hauptstrasse", "Bahnhofstrasse", "Gartenweg", "Schillerstrasse", "Berliner Allee"];
+const DE_STREETS: &[&str] = &[
+    "Hauptstrasse",
+    "Bahnhofstrasse",
+    "Gartenweg",
+    "Schillerstrasse",
+    "Berliner Allee",
+];
 const DE_COMPANIES: &[&str] = &["Nordstern GmbH", "Rhein Data GmbH", "Alpen Systems GmbH"];
-const DE_JOBS: &[&str] = &["Produktmanager", "Softwareentwickler", "Vertriebsleiter", "Datenanalyst"];
+const DE_JOBS: &[&str] = &[
+    "Produktmanager",
+    "Softwareentwickler",
+    "Vertriebsleiter",
+    "Datenanalyst",
+];
 
 pub struct GeneratorService;
 
@@ -112,7 +200,10 @@ impl GeneratorService {
     pub fn generate_nanoid(options: &NanoIdGenerateOptions) -> AppResult<GeneratorItemsResult> {
         let count = normalize_count(options.count)?;
         let length = normalize_length(options.length, 8, 128, "NanoID 长度")?;
-        let alphabet = options.alphabet.as_deref().unwrap_or(DEFAULT_NANOID_ALPHABET);
+        let alphabet = options
+            .alphabet
+            .as_deref()
+            .unwrap_or(DEFAULT_NANOID_ALPHABET);
         let alphabet_chars = unique_chars(alphabet)?;
         let mut rng = OsRng;
         let mut items = Vec::with_capacity(count);
@@ -120,22 +211,34 @@ impl GeneratorService {
         for _ in 0..count {
             let mut value = String::with_capacity(length);
             for _ in 0..length {
-                let ch = alphabet_chars.choose(&mut rng).ok_or_else(|| AppError::InvalidData("NanoID 字符集不能为空".to_string()))?;
+                let ch = alphabet_chars
+                    .choose(&mut rng)
+                    .ok_or_else(|| AppError::InvalidData("NanoID 字符集不能为空".to_string()))?;
                 value.push(*ch);
             }
             items.push(value);
         }
 
-        Ok(build_items_result(items, vec![format!("长度: {}", length), format!("字符集: {} 个字符", alphabet_chars.len())]))
+        Ok(build_items_result(
+            items,
+            vec![
+                format!("长度: {}", length),
+                format!("字符集: {} 个字符", alphabet_chars.len()),
+            ],
+        ))
     }
 
-    pub fn generate_random_value(options: &RandomValueGenerateOptions) -> AppResult<GeneratorItemsResult> {
+    pub fn generate_random_value(
+        options: &RandomValueGenerateOptions,
+    ) -> AppResult<GeneratorItemsResult> {
         let count = normalize_count(options.count)?;
         let mut rng = OsRng;
         let items = match options.mode {
             RandomValueMode::Integer => {
                 validate_min_max(options.min, options.max)?;
-                (0..count).map(|_| rng.gen_range(options.min..=options.max).to_string()).collect::<Vec<_>>()
+                (0..count)
+                    .map(|_| rng.gen_range(options.min..=options.max).to_string())
+                    .collect::<Vec<_>>()
             }
             RandomValueMode::Float => {
                 validate_min_max(options.min, options.max)?;
@@ -152,7 +255,10 @@ impl GeneratorService {
             }
             RandomValueMode::String => {
                 let length = normalize_length(options.length, 1, 256, "随机字符串长度")?;
-                let charset = options.charset.as_deref().unwrap_or(DEFAULT_NANOID_ALPHABET);
+                let charset = options
+                    .charset
+                    .as_deref()
+                    .unwrap_or(DEFAULT_NANOID_ALPHABET);
                 let alphabet_chars = unique_chars(charset)?;
                 (0..count)
                     .map(|_| {
@@ -167,7 +273,10 @@ impl GeneratorService {
             }
         };
 
-        Ok(build_items_result(items, vec![format!("模式: {:?}", options.mode)]))
+        Ok(build_items_result(
+            items,
+            vec![format!("模式: {:?}", options.mode)],
+        ))
     }
 
     pub fn generate_password(options: &PasswordGenerateOptions) -> AppResult<GeneratorItemsResult> {
@@ -180,7 +289,9 @@ impl GeneratorService {
         for _ in 0..count {
             let mut chars = Vec::with_capacity(length);
             for pool in &pools {
-                let ch = pool.choose(&mut rng).ok_or_else(|| AppError::InvalidData("密码字符池不能为空".to_string()))?;
+                let ch = pool
+                    .choose(&mut rng)
+                    .ok_or_else(|| AppError::InvalidData("密码字符池不能为空".to_string()))?;
                 chars.push(*ch);
             }
             while chars.len() < length {
@@ -192,7 +303,13 @@ impl GeneratorService {
             items.push(chars.into_iter().collect::<String>());
         }
 
-        Ok(build_items_result(items, vec![format!("长度: {}", length), format!("规则组数: {}", pools.len())]))
+        Ok(build_items_result(
+            items,
+            vec![
+                format!("长度: {}", length),
+                format!("规则组数: {}", pools.len()),
+            ],
+        ))
     }
 
     pub fn generate_api_key(options: &ApiKeyGenerateOptions) -> AppResult<GeneratorItemsResult> {
@@ -202,8 +319,15 @@ impl GeneratorService {
         let mut items = Vec::with_capacity(count);
 
         for _ in 0..count {
-            let random = std::iter::repeat_with(|| rng.sample(Alphanumeric)).take(length).map(char::from).collect::<String>();
-            let value = if options.prefix.trim().is_empty() { random } else { format!("{}{}{}", options.prefix.trim(), options.separator, random) };
+            let random = std::iter::repeat_with(|| rng.sample(Alphanumeric))
+                .take(length)
+                .map(char::from)
+                .collect::<String>();
+            let value = if options.prefix.trim().is_empty() {
+                random
+            } else {
+                format!("{}{}{}", options.prefix.trim(), options.separator, random)
+            };
             items.push(value);
         }
 
@@ -243,17 +367,29 @@ impl GeneratorService {
 
     pub fn generate_jwt(options: &JwtGenerateOptions) -> AppResult<JwtGenerateResult> {
         let payload = parse_json(&options.payload_json, "Payload JSON")?;
-        let header = if options.header_json.trim().is_empty() { json!({ "alg": "HS256", "typ": "JWT" }) } else { parse_json(&options.header_json, "Header JSON")? };
-        let secret = if options.secret.is_empty() { "deskforge-dev-secret" } else { options.secret.as_str() };
+        let header = if options.header_json.trim().is_empty() {
+            json!({ "alg": "HS256", "typ": "JWT" })
+        } else {
+            parse_json(&options.header_json, "Header JSON")?
+        };
+        let secret = if options.secret.is_empty() {
+            "deskforge-dev-secret"
+        } else {
+            options.secret.as_str()
+        };
 
-        let header_compact = serde_json::to_vec(&header).map_err(|error| AppError::InvalidData(format!("序列化 JWT Header 失败: {}", error)))?;
-        let payload_compact = serde_json::to_vec(&payload).map_err(|error| AppError::InvalidData(format!("序列化 JWT Payload 失败: {}", error)))?;
+        let header_compact = serde_json::to_vec(&header)
+            .map_err(|error| AppError::InvalidData(format!("序列化 JWT Header 失败: {}", error)))?;
+        let payload_compact = serde_json::to_vec(&payload).map_err(|error| {
+            AppError::InvalidData(format!("序列化 JWT Payload 失败: {}", error))
+        })?;
 
         let header_segment = URL_SAFE_NO_PAD.encode(header_compact);
         let payload_segment = URL_SAFE_NO_PAD.encode(payload_compact);
         let message = format!("{}.{}", header_segment, payload_segment);
 
-        let mut mac = HmacSha256::new_from_slice(secret.as_bytes()).map_err(|error| AppError::InvalidData(format!("生成 JWT 签名失败: {}", error)))?;
+        let mut mac = HmacSha256::new_from_slice(secret.as_bytes())
+            .map_err(|error| AppError::InvalidData(format!("生成 JWT 签名失败: {}", error)))?;
         mac.update(message.as_bytes());
         let signature = URL_SAFE_NO_PAD.encode(mac.finalize().into_bytes());
         let token = format!("{}.{}", message, signature);
@@ -262,7 +398,10 @@ impl GeneratorService {
             token,
             header_pretty: pretty_json(&header)?,
             payload_pretty: pretty_json(&payload)?,
-            meta: vec!["算法: HS256".to_string(), format!("Secret 长度: {}", secret.chars().count())],
+            meta: vec![
+                "算法: HS256".to_string(),
+                format!("Secret 长度: {}", secret.chars().count()),
+            ],
         })
     }
 
@@ -277,21 +416,34 @@ impl GeneratorService {
             return Err(AppError::InvalidData("JWT 必须包含 3 段".to_string()));
         }
 
-        let header_bytes = URL_SAFE_NO_PAD.decode(segments[0]).map_err(|error| AppError::InvalidData(format!("JWT Header 解码失败: {}", error)))?;
-        let payload_bytes = URL_SAFE_NO_PAD.decode(segments[1]).map_err(|error| AppError::InvalidData(format!("JWT Payload 解码失败: {}", error)))?;
-        let header: Value = serde_json::from_slice(&header_bytes).map_err(|error| AppError::InvalidData(format!("JWT Header 不是合法 JSON: {}", error)))?;
-        let payload: Value = serde_json::from_slice(&payload_bytes).map_err(|error| AppError::InvalidData(format!("JWT Payload 不是合法 JSON: {}", error)))?;
+        let header_bytes = URL_SAFE_NO_PAD
+            .decode(segments[0])
+            .map_err(|error| AppError::InvalidData(format!("JWT Header 解码失败: {}", error)))?;
+        let payload_bytes = URL_SAFE_NO_PAD
+            .decode(segments[1])
+            .map_err(|error| AppError::InvalidData(format!("JWT Payload 解码失败: {}", error)))?;
+        let header: Value = serde_json::from_slice(&header_bytes).map_err(|error| {
+            AppError::InvalidData(format!("JWT Header 不是合法 JSON: {}", error))
+        })?;
+        let payload: Value = serde_json::from_slice(&payload_bytes).map_err(|error| {
+            AppError::InvalidData(format!("JWT Payload 不是合法 JSON: {}", error))
+        })?;
         let algorithm = header.get("alg").and_then(Value::as_str).unwrap_or("未知");
 
         Ok(JwtDecodeResult {
             header_pretty: pretty_json(&header)?,
             payload_pretty: pretty_json(&payload)?,
             signature: segments[2].to_string(),
-            meta: vec![format!("算法: {}", algorithm), format!("签名长度: {}", segments[2].len())],
+            meta: vec![
+                format!("算法: {}", algorithm),
+                format!("签名长度: {}", segments[2].len()),
+            ],
         })
     }
 
-    pub fn generate_user_persona(options: &UserDataGenerateOptions) -> AppResult<UserDataGenerateResult> {
+    pub fn generate_user_persona(
+        options: &UserDataGenerateOptions,
+    ) -> AppResult<UserDataGenerateResult> {
         let count = normalize_count(options.count)?;
         let country = country_info(options.country);
         let mut rng = OsRng;
@@ -318,7 +470,9 @@ impl GeneratorService {
         build_user_result(options.country, "个人资料", list)
     }
 
-    pub fn generate_user_contact(options: &UserDataGenerateOptions) -> AppResult<UserDataGenerateResult> {
+    pub fn generate_user_contact(
+        options: &UserDataGenerateOptions,
+    ) -> AppResult<UserDataGenerateResult> {
         let count = normalize_count(options.count)?;
         let mut rng = OsRng;
         let mut list = Vec::with_capacity(count);
@@ -339,7 +493,9 @@ impl GeneratorService {
         build_user_result(options.country, "联系方式", list)
     }
 
-    pub fn generate_user_address(options: &UserDataGenerateOptions) -> AppResult<UserDataGenerateResult> {
+    pub fn generate_user_address(
+        options: &UserDataGenerateOptions,
+    ) -> AppResult<UserDataGenerateResult> {
         let count = normalize_count(options.count)?;
         let mut rng = OsRng;
         let mut list = Vec::with_capacity(count);
@@ -351,7 +507,9 @@ impl GeneratorService {
         build_user_result(options.country, "地址", list)
     }
 
-    pub fn generate_user_company(options: &UserDataGenerateOptions) -> AppResult<UserDataGenerateResult> {
+    pub fn generate_user_company(
+        options: &UserDataGenerateOptions,
+    ) -> AppResult<UserDataGenerateResult> {
         let count = normalize_count(options.count)?;
         let mut rng = OsRng;
         let mut list = Vec::with_capacity(count);
@@ -368,7 +526,9 @@ impl GeneratorService {
         build_user_result(options.country, "公司", list)
     }
 
-    pub fn generate_identity_document(options: &IdentityGenerateOptions) -> AppResult<UserDataGenerateResult> {
+    pub fn generate_identity_document(
+        options: &IdentityGenerateOptions,
+    ) -> AppResult<UserDataGenerateResult> {
         let count = normalize_count(options.count)?;
         let mut rng = OsRng;
         let mut list = Vec::with_capacity(count);
@@ -392,7 +552,9 @@ impl GeneratorService {
         build_user_result(options.country, "身份", list)
     }
 
-    pub fn generate_payment_card(options: &PaymentCardGenerateOptions) -> AppResult<UserDataGenerateResult> {
+    pub fn generate_payment_card(
+        options: &PaymentCardGenerateOptions,
+    ) -> AppResult<UserDataGenerateResult> {
         let count = normalize_count(options.count)?;
         let mut rng = OsRng;
         let mut list = Vec::with_capacity(count);
@@ -406,7 +568,11 @@ impl GeneratorService {
             let card_number = build_card_number(options.country, &brand, &mut rng)?;
             let expiry_month = rng.gen_range(1..=12);
             let expiry_year = rng.gen_range(2027..=2034);
-            let cvv_len = if brand.eq_ignore_ascii_case("amex") { 4 } else { 3 };
+            let cvv_len = if brand.eq_ignore_ascii_case("amex") {
+                4
+            } else {
+                3
+            };
             list.push(json!({
                 "brand": brand,
                 "cardNumber": card_number,
@@ -421,7 +587,9 @@ impl GeneratorService {
         build_user_result(options.country, "支付", list)
     }
 
-    pub fn generate_user_profile(options: &UserProfileGenerateOptions) -> AppResult<UserDataGenerateResult> {
+    pub fn generate_user_profile(
+        options: &UserProfileGenerateOptions,
+    ) -> AppResult<UserDataGenerateResult> {
         let count = normalize_count(options.count)?;
         if !(options.include_profile
             || options.include_contact
@@ -447,40 +615,78 @@ impl GeneratorService {
             let month = rng.gen_range(1..=12);
             let day = rng.gen_range(1..=28);
             let birthday = format!("{:04}-{:02}-{:02}", year, month, day);
-            let username = slugify(&name, &country_info(options.country).code.to_lowercase(), rng.gen_range(100..999));
+            let username = slugify(
+                &name,
+                &country_info(options.country).code.to_lowercase(),
+                rng.gen_range(100..999),
+            );
             let email = build_email(options.country, &name, &mut rng);
             let phone = build_phone(options.country, &mut rng);
             let address = build_address(options.country, &mut rng);
             let mut profile = Map::new();
 
             if options.include_profile {
-                profile.insert("profile".to_string(), build_profile_value(options.country, &name, gender, age, &birthday, &username));
+                profile.insert(
+                    "profile".to_string(),
+                    build_profile_value(options.country, &name, gender, age, &birthday, &username),
+                );
             }
             if options.include_contact {
-                profile.insert("contact".to_string(), build_contact_value(options.country, &name, &email, &phone, &username, &mut rng));
+                profile.insert(
+                    "contact".to_string(),
+                    build_contact_value(
+                        options.country,
+                        &name,
+                        &email,
+                        &phone,
+                        &username,
+                        &mut rng,
+                    ),
+                );
             }
             if options.include_address {
                 profile.insert("address".to_string(), address.clone());
             }
             if options.include_company {
-                profile.insert("company".to_string(), build_company_value(options.country, &mut rng));
+                profile.insert(
+                    "company".to_string(),
+                    build_company_value(options.country, &mut rng),
+                );
             }
             if options.include_identity {
-                profile.insert("identity".to_string(), build_identity_value(options.country, &mut rng)?);
+                profile.insert(
+                    "identity".to_string(),
+                    build_identity_value(options.country, &mut rng)?,
+                );
             }
             if options.include_payment {
-                profile.insert("payment".to_string(), build_payment_value(options.country, &mut rng)?);
+                profile.insert(
+                    "payment".to_string(),
+                    build_payment_value(options.country, &mut rng)?,
+                );
             }
             if options.include_account {
-                profile.insert("account".to_string(), build_account_value(options.country, &name, &username, &email, &mut rng));
+                profile.insert(
+                    "account".to_string(),
+                    build_account_value(options.country, &name, &username, &email, &mut rng),
+                );
             }
             if options.include_preferences {
-                profile.insert("preferences".to_string(), build_preferences_value(options.country, &mut rng));
+                profile.insert(
+                    "preferences".to_string(),
+                    build_preferences_value(options.country, &mut rng),
+                );
             }
             if options.include_device {
-                profile.insert("device".to_string(), build_device_value(options.country, &mut rng));
+                profile.insert(
+                    "device".to_string(),
+                    build_device_value(options.country, &mut rng),
+                );
             }
-            profile.insert("countryCode".to_string(), json!(country_info(options.country).code));
+            profile.insert(
+                "countryCode".to_string(),
+                json!(country_info(options.country).code),
+            );
             list.push(Value::Object(profile));
         }
 
@@ -496,47 +702,84 @@ struct CountryInfo {
 
 fn country_info(country: CountryPreset) -> CountryInfo {
     match country {
-        CountryPreset::Cn => CountryInfo { code: "CN", label: "中国大陆" },
-        CountryPreset::Us => CountryInfo { code: "US", label: "美国" },
-        CountryPreset::Uk => CountryInfo { code: "UK", label: "英国" },
-        CountryPreset::Jp => CountryInfo { code: "JP", label: "日本" },
-        CountryPreset::De => CountryInfo { code: "DE", label: "德国" },
+        CountryPreset::Cn => CountryInfo {
+            code: "CN",
+            label: "中国大陆",
+        },
+        CountryPreset::Us => CountryInfo {
+            code: "US",
+            label: "美国",
+        },
+        CountryPreset::Uk => CountryInfo {
+            code: "UK",
+            label: "英国",
+        },
+        CountryPreset::Jp => CountryInfo {
+            code: "JP",
+            label: "日本",
+        },
+        CountryPreset::De => CountryInfo {
+            code: "DE",
+            label: "德国",
+        },
     }
 }
 
 fn build_items_result(items: Vec<String>, meta: Vec<String>) -> GeneratorItemsResult {
-    GeneratorItemsResult { text: items.join("\n"), items, meta }
+    GeneratorItemsResult {
+        text: items.join("\n"),
+        items,
+        meta,
+    }
 }
 
-fn build_user_result(country: CountryPreset, section: &str, values: Vec<Value>) -> AppResult<UserDataGenerateResult> {
+fn build_user_result(
+    country: CountryPreset,
+    section: &str,
+    values: Vec<Value>,
+) -> AppResult<UserDataGenerateResult> {
     let info = country_info(country);
-    let items = values.iter().map(compact_json).collect::<AppResult<Vec<_>>>()?;
+    let items = values
+        .iter()
+        .map(compact_json)
+        .collect::<AppResult<Vec<_>>>()?;
     let text = items.join("\n");
-    let json = serde_json::to_string_pretty(&values).map_err(|error| AppError::InvalidData(format!("{}结果序列化失败: {}", section, error)))?;
+    let json = serde_json::to_string_pretty(&values)
+        .map_err(|error| AppError::InvalidData(format!("{}结果序列化失败: {}", section, error)))?;
     Ok(UserDataGenerateResult {
         country: info.code.to_string(),
         locale_label: info.label.to_string(),
         text,
         items,
         json,
-        meta: vec![format!("国家: {}", info.label), format!("模块: {}", section), format!("数量: {}", values.len())],
+        meta: vec![
+            format!("国家: {}", info.label),
+            format!("模块: {}", section),
+            format!("数量: {}", values.len()),
+        ],
     })
 }
 
 fn compact_json(value: &Value) -> AppResult<String> {
-    serde_json::to_string(value).map_err(|error| AppError::InvalidData(format!("结果序列化失败: {}", error)))
+    serde_json::to_string(value)
+        .map_err(|error| AppError::InvalidData(format!("结果序列化失败: {}", error)))
 }
 
 fn normalize_count(count: usize) -> AppResult<usize> {
     if count == 0 || count > 100 {
-        return Err(AppError::InvalidData("批量数量必须在 1 到 100 之间".to_string()));
+        return Err(AppError::InvalidData(
+            "批量数量必须在 1 到 100 之间".to_string(),
+        ));
     }
     Ok(count)
 }
 
 fn normalize_length(length: usize, min: usize, max: usize, label: &str) -> AppResult<usize> {
     if length < min || length > max {
-        return Err(AppError::InvalidData(format!("{}必须在 {} 到 {} 之间", label, min, max)));
+        return Err(AppError::InvalidData(format!(
+            "{}必须在 {} 到 {} 之间",
+            label, min, max
+        )));
     }
     Ok(length)
 }
@@ -569,23 +812,35 @@ fn build_password_pools(options: &PasswordGenerateOptions) -> AppResult<Vec<Vec<
         numbers.retain(|ch| !SIMILAR_CHARS.contains(*ch));
     }
 
-    if options.include_uppercase { pools.push(uppercase); }
-    if options.include_lowercase { pools.push(lowercase); }
-    if options.include_numbers { pools.push(numbers); }
-    if options.include_symbols { pools.push(symbols); }
+    if options.include_uppercase {
+        pools.push(uppercase);
+    }
+    if options.include_lowercase {
+        pools.push(lowercase);
+    }
+    if options.include_numbers {
+        pools.push(numbers);
+    }
+    if options.include_symbols {
+        pools.push(symbols);
+    }
 
     if pools.is_empty() {
-        return Err(AppError::InvalidData("至少启用一种密码字符规则".to_string()));
+        return Err(AppError::InvalidData(
+            "至少启用一种密码字符规则".to_string(),
+        ));
     }
     Ok(pools)
 }
 
 fn parse_json(input: &str, label: &str) -> AppResult<Value> {
-    serde_json::from_str::<Value>(input).map_err(|error| AppError::InvalidData(format!("{}解析失败: {}", label, error)))
+    serde_json::from_str::<Value>(input)
+        .map_err(|error| AppError::InvalidData(format!("{}解析失败: {}", label, error)))
 }
 
 fn pretty_json(value: &Value) -> AppResult<String> {
-    serde_json::to_string_pretty(value).map_err(|error| AppError::InvalidData(format!("JSON 美化失败: {}", error)))
+    serde_json::to_string_pretty(value)
+        .map_err(|error| AppError::InvalidData(format!("JSON 美化失败: {}", error)))
 }
 
 fn format_hash_algorithm(algorithm: HashAlgorithm) -> &'static str {
@@ -598,27 +853,62 @@ fn format_hash_algorithm(algorithm: HashAlgorithm) -> &'static str {
 }
 
 fn choose_str<'a>(items: &'a [&'a str], rng: &mut OsRng) -> &'a str {
-    items.choose(rng).copied().expect("static slice is non-empty")
+    items
+        .choose(rng)
+        .copied()
+        .expect("static slice is non-empty")
 }
 
 fn full_name(country: CountryPreset, _gender: &str, rng: &mut OsRng) -> String {
     match country {
-        CountryPreset::Cn => format!("{}{}", choose_str(CN_SURNAMES, rng), choose_str(CN_GIVEN, rng)),
-        CountryPreset::Us => format!("{} {}", choose_str(US_FIRST_NAMES, rng), choose_str(US_LAST_NAMES, rng)),
-        CountryPreset::Uk => format!("{} {}", choose_str(UK_FIRST_NAMES, rng), choose_str(UK_LAST_NAMES, rng)),
-        CountryPreset::Jp => format!("{} {}", choose_str(JP_FAMILY_NAMES, rng), choose_str(JP_GIVEN_NAMES, rng)),
-        CountryPreset::De => format!("{} {}", choose_str(DE_FIRST_NAMES, rng), choose_str(DE_LAST_NAMES, rng)),
+        CountryPreset::Cn => format!(
+            "{}{}",
+            choose_str(CN_SURNAMES, rng),
+            choose_str(CN_GIVEN, rng)
+        ),
+        CountryPreset::Us => format!(
+            "{} {}",
+            choose_str(US_FIRST_NAMES, rng),
+            choose_str(US_LAST_NAMES, rng)
+        ),
+        CountryPreset::Uk => format!(
+            "{} {}",
+            choose_str(UK_FIRST_NAMES, rng),
+            choose_str(UK_LAST_NAMES, rng)
+        ),
+        CountryPreset::Jp => format!(
+            "{} {}",
+            choose_str(JP_FAMILY_NAMES, rng),
+            choose_str(JP_GIVEN_NAMES, rng)
+        ),
+        CountryPreset::De => format!(
+            "{} {}",
+            choose_str(DE_FIRST_NAMES, rng),
+            choose_str(DE_LAST_NAMES, rng)
+        ),
     }
 }
 
 fn slugify(name: &str, prefix: &str, suffix: i32) -> String {
     let ascii = name
         .chars()
-        .map(|ch| if ch.is_ascii_alphanumeric() { ch.to_ascii_lowercase() } else if ch.is_whitespace() { '-' } else { '-' })
+        .map(|ch| {
+            if ch.is_ascii_alphanumeric() {
+                ch.to_ascii_lowercase()
+            } else if ch.is_whitespace() {
+                '-'
+            } else {
+                '-'
+            }
+        })
         .collect::<String>()
         .trim_matches('-')
         .replace("--", "-");
-    if ascii.is_empty() { format!("{}-{}", prefix, suffix) } else { format!("{}-{}", ascii, suffix) }
+    if ascii.is_empty() {
+        format!("{}-{}", prefix, suffix)
+    } else {
+        format!("{}-{}", ascii, suffix)
+    }
 }
 
 fn build_email(country: CountryPreset, name: &str, rng: &mut OsRng) -> String {
@@ -629,17 +919,42 @@ fn build_email(country: CountryPreset, name: &str, rng: &mut OsRng) -> String {
         CountryPreset::Jp => ["yahoo.co.jp", "gmail.com", "example.jp"].as_slice(),
         CountryPreset::De => ["gmail.de", "web.de", "example.de"].as_slice(),
     };
-    let local = slugify(name, &country_info(country).code.to_lowercase(), rng.gen_range(10..99)).replace('-', "");
+    let local = slugify(
+        name,
+        &country_info(country).code.to_lowercase(),
+        rng.gen_range(10..99),
+    )
+    .replace('-', "");
     format!("{}@{}", local, choose_str(domains, rng))
 }
 
 fn build_phone(country: CountryPreset, rng: &mut OsRng) -> String {
     match country {
-        CountryPreset::Cn => format!("+86 1{}{}{}", rng.gen_range(3..=9), random_digits(4, rng), random_digits(4, rng)),
-        CountryPreset::Us => format!("+1 ({}) {}-{}", rng.gen_range(201..999), rng.gen_range(200..999), random_digits(4, rng)),
-        CountryPreset::Uk => format!("+44 7{} {} {}", random_digits(3, rng), random_digits(3, rng), random_digits(3, rng)),
+        CountryPreset::Cn => format!(
+            "+86 1{}{}{}",
+            rng.gen_range(3..=9),
+            random_digits(4, rng),
+            random_digits(4, rng)
+        ),
+        CountryPreset::Us => format!(
+            "+1 ({}) {}-{}",
+            rng.gen_range(201..999),
+            rng.gen_range(200..999),
+            random_digits(4, rng)
+        ),
+        CountryPreset::Uk => format!(
+            "+44 7{} {} {}",
+            random_digits(3, rng),
+            random_digits(3, rng),
+            random_digits(3, rng)
+        ),
         CountryPreset::Jp => format!("+81 90-{}-{}", random_digits(4, rng), random_digits(4, rng)),
-        CountryPreset::De => format!("+49 15{} {}{}", rng.gen_range(1..=9), random_digits(3, rng), random_digits(5, rng)),
+        CountryPreset::De => format!(
+            "+49 15{} {}{}",
+            rng.gen_range(1..=9),
+            random_digits(3, rng),
+            random_digits(5, rng)
+        ),
     }
 }
 
@@ -648,13 +963,23 @@ fn build_address(country: CountryPreset, rng: &mut OsRng) -> Value {
         CountryPreset::Cn => {
             let (region, city, district, postal) = CN_REGIONS.choose(rng).copied().unwrap();
             let street_no = rng.gen_range(18..=888);
-            let line1 = format!("{}{}号{}{}室", choose_str(CN_STREETS, rng), street_no, rng.gen_range(1..=12), rng.gen_range(101..=2601));
+            let line1 = format!(
+                "{}{}号{}{}室",
+                choose_str(CN_STREETS, rng),
+                street_no,
+                rng.gen_range(1..=12),
+                rng.gen_range(101..=2601)
+            );
             let formatted = format!("{}{}{}{}", region, city, district, line1);
             json!({ "countryCode": "CN", "region": region, "city": city, "district": district, "postalCode": postal, "line1": line1, "line2": "", "formatted": formatted })
         }
         CountryPreset::Us => {
             let (region, city, postal) = US_REGIONS.choose(rng).copied().unwrap();
-            let line1 = format!("{} {}", rng.gen_range(100..9999), choose_str(US_STREETS, rng));
+            let line1 = format!(
+                "{} {}",
+                rng.gen_range(100..9999),
+                choose_str(US_STREETS, rng)
+            );
             let formatted = format!("{}, {}, {} {}", line1, city, region, postal);
             json!({ "countryCode": "US", "region": region, "city": city, "district": "", "postalCode": postal, "line1": line1, "line2": format!("Suite {}", rng.gen_range(100..999)), "formatted": formatted })
         }
@@ -666,7 +991,12 @@ fn build_address(country: CountryPreset, rng: &mut OsRng) -> Value {
         }
         CountryPreset::Jp => {
             let (region, city, district, postal) = JP_REGIONS.choose(rng).copied().unwrap();
-            let line1 = format!("{}{}-{}", district, rng.gen_range(1..=5), rng.gen_range(1..=20));
+            let line1 = format!(
+                "{}{}-{}",
+                district,
+                rng.gen_range(1..=5),
+                rng.gen_range(1..=20)
+            );
             let formatted = format!("〒{} {}{}{}", postal, region, city, line1);
             json!({ "countryCode": "JP", "region": region, "city": city, "district": district, "postalCode": postal, "line1": line1, "line2": "", "formatted": formatted })
         }
@@ -681,7 +1011,11 @@ fn build_address(country: CountryPreset, rng: &mut OsRng) -> Value {
 
 fn build_company_name(country: CountryPreset, rng: &mut OsRng) -> String {
     match country {
-        CountryPreset::Cn => format!("{}{}", choose_str(CN_COMPANY_PREFIX, rng), choose_str(CN_COMPANY_SUFFIX, rng)),
+        CountryPreset::Cn => format!(
+            "{}{}",
+            choose_str(CN_COMPANY_PREFIX, rng),
+            choose_str(CN_COMPANY_SUFFIX, rng)
+        ),
         CountryPreset::Us => choose_str(US_COMPANIES, rng).to_string(),
         CountryPreset::Uk => choose_str(UK_COMPANIES, rng).to_string(),
         CountryPreset::Jp => choose_str(JP_COMPANIES, rng).to_string(),
@@ -700,10 +1034,28 @@ fn build_job_title(country: CountryPreset, rng: &mut OsRng) -> String {
 }
 
 fn choose_department(rng: &mut OsRng) -> String {
-    choose_str(&["Engineering", "Product", "Operations", "Marketing", "Finance", "Data"], rng).to_string()
+    choose_str(
+        &[
+            "Engineering",
+            "Product",
+            "Operations",
+            "Marketing",
+            "Finance",
+            "Data",
+        ],
+        rng,
+    )
+    .to_string()
 }
 
-fn build_profile_value(country: CountryPreset, name: &str, gender: &str, age: i32, birthday: &str, username: &str) -> Value {
+fn build_profile_value(
+    country: CountryPreset,
+    name: &str,
+    gender: &str,
+    age: i32,
+    birthday: &str,
+    username: &str,
+) -> Value {
     json!({
         "name": name,
         "displayName": name,
@@ -716,7 +1068,14 @@ fn build_profile_value(country: CountryPreset, name: &str, gender: &str, age: i3
     })
 }
 
-fn build_contact_value(country: CountryPreset, name: &str, email: &str, phone: &str, username: &str, rng: &mut OsRng) -> Value {
+fn build_contact_value(
+    country: CountryPreset,
+    name: &str,
+    email: &str,
+    phone: &str,
+    username: &str,
+    rng: &mut OsRng,
+) -> Value {
     json!({
         "name": name,
         "email": email,
@@ -751,7 +1110,11 @@ fn build_identity_value(country: CountryPreset, rng: &mut OsRng) -> AppResult<Va
 fn build_payment_value(country: CountryPreset, rng: &mut OsRng) -> AppResult<Value> {
     let brand = default_card_brand(country).to_string();
     let card_number = build_card_number(country, &brand, rng)?;
-    let cvv_len = if brand.eq_ignore_ascii_case("amex") { 4 } else { 3 };
+    let cvv_len = if brand.eq_ignore_ascii_case("amex") {
+        4
+    } else {
+        3
+    };
     Ok(json!({
         "brand": brand,
         "cardNumber": card_number,
@@ -763,8 +1126,22 @@ fn build_payment_value(country: CountryPreset, rng: &mut OsRng) -> AppResult<Val
     }))
 }
 
-fn build_account_value(country: CountryPreset, name: &str, username: &str, email: &str, rng: &mut OsRng) -> Value {
-    let display_name = if country == CountryPreset::Cn { name.to_string() } else { format!("{} {}", choose_str(&["Pro", "Prime", "Plus", "Core"], rng), name) };
+fn build_account_value(
+    country: CountryPreset,
+    name: &str,
+    username: &str,
+    email: &str,
+    rng: &mut OsRng,
+) -> Value {
+    let display_name = if country == CountryPreset::Cn {
+        name.to_string()
+    } else {
+        format!(
+            "{} {}",
+            choose_str(&["Pro", "Prime", "Plus", "Core"], rng),
+            name
+        )
+    };
     json!({
         "userId": format!("usr_{}", random_digits(10, rng)),
         "displayName": display_name,
@@ -864,11 +1241,20 @@ fn random_recent_datetime(rng: &mut OsRng) -> String {
     let hour = rng.gen_range(0..=23);
     let minute = rng.gen_range(0..=59);
     let second = rng.gen_range(0..=59);
-    format!("{:04}-{:02}-{:02}T{:02}:{:02}:{:02}Z", year, month, day, hour, minute, second)
+    format!(
+        "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}Z",
+        year, month, day, hour, minute, second
+    )
 }
 
 fn mock_ip(rng: &mut OsRng) -> String {
-    format!("{}.{}.{}.{}", rng.gen_range(11..=223), rng.gen_range(0..=255), rng.gen_range(0..=255), rng.gen_range(1..=254))
+    format!(
+        "{}.{}.{}.{}",
+        rng.gen_range(11..=223),
+        rng.gen_range(0..=255),
+        rng.gen_range(0..=255),
+        rng.gen_range(1..=254)
+    )
 }
 
 fn default_document_type(country: CountryPreset) -> &'static str {
@@ -881,10 +1267,19 @@ fn default_document_type(country: CountryPreset) -> &'static str {
     }
 }
 
-fn build_identity_number(country: CountryPreset, _document_type: &str, rng: &mut OsRng) -> AppResult<String> {
+fn build_identity_number(
+    country: CountryPreset,
+    _document_type: &str,
+    rng: &mut OsRng,
+) -> AppResult<String> {
     match country {
         CountryPreset::Cn => Ok(generate_cn_id(rng)),
-        CountryPreset::Us => Ok(format!("{}-{}-{}", random_non_zero_digits(3, rng), random_non_zero_digits(2, rng), random_non_zero_digits(4, rng))),
+        CountryPreset::Us => Ok(format!(
+            "{}-{}-{}",
+            random_non_zero_digits(3, rng),
+            random_non_zero_digits(2, rng),
+            random_non_zero_digits(4, rng)
+        )),
         CountryPreset::Uk => Ok(generate_uk_nino(rng)),
         CountryPreset::Jp => Ok(generate_jp_my_number(rng)),
         CountryPreset::De => Ok(generate_de_tax_id(rng)),
@@ -901,7 +1296,11 @@ fn generate_cn_id(rng: &mut OsRng) -> String {
     let base = format!("{}{:04}{:02}{:02}{:03}", area, year, month, day, seq);
     let weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
     let codes = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
-    let sum = base.chars().zip(weights).map(|(ch, weight)| ch.to_digit(10).unwrap() * weight).sum::<u32>();
+    let sum = base
+        .chars()
+        .zip(weights)
+        .map(|(ch, weight)| ch.to_digit(10).unwrap() * weight)
+        .sum::<u32>();
     format!("{}{}", base, codes[(sum % 11) as usize])
 }
 
@@ -921,14 +1320,22 @@ fn generate_uk_nino(rng: &mut OsRng) -> String {
 fn generate_jp_my_number(rng: &mut OsRng) -> String {
     let mut digits = (0..11).map(|_| rng.gen_range(0..=9)).collect::<Vec<u32>>();
     let weights = [2, 3, 4, 5, 6, 7, 2, 3, 4, 5, 6];
-    let sum = digits.iter().rev().zip(weights).map(|(d, w)| d * w).sum::<u32>();
+    let sum = digits
+        .iter()
+        .rev()
+        .zip(weights)
+        .map(|(d, w)| d * w)
+        .sum::<u32>();
     let mod_val = 11 - (sum % 11);
     let check = match mod_val {
         10 | 11 => 0,
         value => value,
     };
     digits.push(check);
-    digits.into_iter().map(|d| char::from_digit(d, 10).unwrap()).collect()
+    digits
+        .into_iter()
+        .map(|d| char::from_digit(d, 10).unwrap())
+        .collect()
 }
 
 fn generate_de_tax_id(rng: &mut OsRng) -> String {
@@ -944,7 +1351,10 @@ fn generate_de_tax_id(rng: &mut OsRng) -> String {
     }
     let check = (11 - product) % 10;
     digits.push(check);
-    digits.into_iter().map(|d| char::from_digit(d, 10).unwrap()).collect()
+    digits
+        .into_iter()
+        .map(|d| char::from_digit(d, 10).unwrap())
+        .collect()
 }
 
 fn default_card_brand(country: CountryPreset) -> &'static str {
@@ -970,13 +1380,19 @@ fn build_card_number(country: CountryPreset, brand: &str, rng: &mut OsRng) -> Ap
 }
 
 fn generate_luhn_number(prefix: &str, total_length: usize, rng: &mut OsRng) -> String {
-    let mut digits = prefix.chars().filter_map(|c| c.to_digit(10)).collect::<Vec<_>>();
+    let mut digits = prefix
+        .chars()
+        .filter_map(|c| c.to_digit(10))
+        .collect::<Vec<_>>();
     while digits.len() + 1 < total_length {
         digits.push(rng.gen_range(0..=9));
     }
     let check = luhn_check_digit(&digits);
     digits.push(check);
-    digits.into_iter().map(|d| char::from_digit(d, 10).unwrap()).collect()
+    digits
+        .into_iter()
+        .map(|d| char::from_digit(d, 10).unwrap())
+        .collect()
 }
 
 fn luhn_check_digit(digits: &[u32]) -> u32 {
@@ -1003,7 +1419,9 @@ fn mask_card_number(number: &str) -> String {
 }
 
 fn random_digits(length: usize, rng: &mut OsRng) -> String {
-    (0..length).map(|_| char::from_digit(rng.gen_range(0..=9), 10).unwrap()).collect()
+    (0..length)
+        .map(|_| char::from_digit(rng.gen_range(0..=9), 10).unwrap())
+        .collect()
 }
 
 fn random_non_zero_digits(length: usize, rng: &mut OsRng) -> String {
@@ -1019,14 +1437,19 @@ fn random_non_zero_digits(length: usize, rng: &mut OsRng) -> String {
 mod tests {
     use super::*;
     use crate::models::generator::{
-        HashAlgorithm, IdentityGenerateOptions, JwtDecodeOptions, JwtGenerateOptions, PasswordGenerateOptions,
-        PaymentCardGenerateOptions, RandomValueGenerateOptions, RandomValueMode, UserDataGenerateOptions,
-        UserProfileGenerateOptions, UuidGenerateOptions,
+        HashAlgorithm, IdentityGenerateOptions, JwtDecodeOptions, JwtGenerateOptions,
+        PasswordGenerateOptions, PaymentCardGenerateOptions, RandomValueGenerateOptions,
+        RandomValueMode, UserDataGenerateOptions, UserProfileGenerateOptions, UuidGenerateOptions,
     };
 
     #[test]
     fn generate_uuid_batch() {
-        let result = GeneratorService::generate_uuid(&UuidGenerateOptions { count: 3, uppercase: false, remove_hyphens: false }).unwrap();
+        let result = GeneratorService::generate_uuid(&UuidGenerateOptions {
+            count: 3,
+            uppercase: false,
+            remove_hyphens: false,
+        })
+        .unwrap();
         assert_eq!(result.items.len(), 3);
         assert!(result.items[0].contains('-'));
     }
@@ -1041,14 +1464,19 @@ mod tests {
             include_numbers: true,
             include_symbols: true,
             exclude_similar: false,
-        }).unwrap();
+        })
+        .unwrap();
         assert_eq!(result.items.len(), 2);
         assert_eq!(result.items[0].chars().count(), 20);
     }
 
     #[test]
     fn generate_hash_stable() {
-        let result = GeneratorService::generate_hash(&HashGenerateOptions { algorithm: HashAlgorithm::Sha256, input: "deskforge".to_string() }).unwrap();
+        let result = GeneratorService::generate_hash(&HashGenerateOptions {
+            algorithm: HashAlgorithm::Sha256,
+            input: "deskforge".to_string(),
+        })
+        .unwrap();
         assert_eq!(result.value.len(), 64);
     }
 
@@ -1058,8 +1486,12 @@ mod tests {
             payload_json: r#"{"sub":"123","role":"admin"}"#.to_string(),
             secret: "deskforge".to_string(),
             header_json: String::new(),
-        }).unwrap();
-        let decoded = GeneratorService::decode_jwt(&JwtDecodeOptions { token: generated.token }).unwrap();
+        })
+        .unwrap();
+        let decoded = GeneratorService::decode_jwt(&JwtDecodeOptions {
+            token: generated.token,
+        })
+        .unwrap();
         assert!(decoded.payload_pretty.contains("admin"));
     }
 
@@ -1073,19 +1505,30 @@ mod tests {
             decimal_places: 2,
             length: 8,
             charset: None,
-        }).unwrap();
+        })
+        .unwrap();
         assert_eq!(result.items.len(), 10);
     }
 
     #[test]
     fn cn_identity_has_checksum_char() {
-        let result = GeneratorService::generate_identity_document(&IdentityGenerateOptions { country: CountryPreset::Cn, count: 1, document_type: String::new() }).unwrap();
+        let result = GeneratorService::generate_identity_document(&IdentityGenerateOptions {
+            country: CountryPreset::Cn,
+            count: 1,
+            document_type: String::new(),
+        })
+        .unwrap();
         assert!(result.text.contains("nationalId"));
     }
 
     #[test]
     fn payment_card_masks_number() {
-        let result = GeneratorService::generate_payment_card(&PaymentCardGenerateOptions { country: CountryPreset::Us, count: 1, brand: "visa".to_string() }).unwrap();
+        let result = GeneratorService::generate_payment_card(&PaymentCardGenerateOptions {
+            country: CountryPreset::Us,
+            count: 1,
+            brand: "visa".to_string(),
+        })
+        .unwrap();
         assert!(result.text.contains("maskedCardNumber"));
     }
 
@@ -1103,7 +1546,8 @@ mod tests {
             include_account: true,
             include_preferences: true,
             include_device: true,
-        }).unwrap();
+        })
+        .unwrap();
         assert!(result.json.contains("identity"));
         assert!(result.json.contains("payment"));
         assert!(result.json.contains("company"));
@@ -1126,15 +1570,17 @@ mod tests {
             include_account: false,
             include_preferences: false,
             include_device: false,
-        }).unwrap_err();
+        })
+        .unwrap_err();
         assert!(error.to_string().contains("至少选择一个组合字段块"));
     }
     #[test]
     fn address_uses_country_specific_field() {
-        let result = GeneratorService::generate_user_address(&UserDataGenerateOptions { country: CountryPreset::De, count: 1 }).unwrap();
+        let result = GeneratorService::generate_user_address(&UserDataGenerateOptions {
+            country: CountryPreset::De,
+            count: 1,
+        })
+        .unwrap();
         assert!(result.json.contains("DE"));
     }
 }
-
-
-

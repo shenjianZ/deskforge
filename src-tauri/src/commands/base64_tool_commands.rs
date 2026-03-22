@@ -2,7 +2,9 @@
 //!
 //! 定义 Base64 编解码相关的 Tauri 命令
 
-use crate::models::base64_tool::{Base64ImageResult, Base64ProcessConfig, Base64ProcessResult, Base64ValidateResult};
+use crate::models::base64_tool::{
+    Base64ImageResult, Base64ProcessConfig, Base64ProcessResult, Base64ValidateResult,
+};
 use crate::services::base64_tool_service::Base64ToolService;
 
 /// 编码 Base64 命令

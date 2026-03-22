@@ -7,7 +7,7 @@ use crate::models::qrcode::{QrConfig, QrStyle};
 use base64::Engine;
 use image::imageops::overlay;
 use image::{ImageReader, Luma, Rgba, RgbaImage};
-use qrcode::{QrCode, EcLevel};
+use qrcode::{EcLevel, QrCode};
 use std::io::Cursor;
 use std::path::Path;
 
@@ -30,9 +30,7 @@ use std::path::Path;
 pub fn render_qr(config: &QrConfig) -> AppResult<RgbaImage> {
     // 验证内容
     if config.content.trim().is_empty() {
-        return Err(AppError::InvalidData(
-            "二维码内容不能为空".to_string(),
-        ));
+        return Err(AppError::InvalidData("二维码内容不能为空".to_string()));
     }
 
     // 解析容错级别
@@ -315,9 +313,11 @@ fn overlay_logo(
 
         // 绘制边框
         let y_start = (logo_y - border_size as i64).max(0) as u32;
-        let y_end = (logo_y + logo_max_size as i64 + border_size as i64).min(img_height as i64) as u32;
+        let y_end =
+            (logo_y + logo_max_size as i64 + border_size as i64).min(img_height as i64) as u32;
         let x_start = (logo_x - border_size as i64).max(0) as u32;
-        let x_end = (logo_x + logo_max_size as i64 + border_size as i64).min(img_width as i64) as u32;
+        let x_end =
+            (logo_x + logo_max_size as i64 + border_size as i64).min(img_width as i64) as u32;
 
         for y in y_start..y_end {
             for x in x_start..x_end {

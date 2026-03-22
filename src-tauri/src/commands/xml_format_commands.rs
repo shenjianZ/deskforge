@@ -8,12 +8,11 @@ use crate::services::xml_format_service::XmlFormatService;
 /// 格式化 XML 命令
 #[tauri::command]
 pub fn format_xml(input: String, config: XmlFormatConfig) -> XmlFormatResult {
-    XmlFormatService::format(&input, &config)
-        .unwrap_or_else(|e| XmlFormatResult {
-            success: false,
-            result: String::new(),
-            error: Some(e.to_string()),
-        })
+    XmlFormatService::format(&input, &config).unwrap_or_else(|e| XmlFormatResult {
+        success: false,
+        result: String::new(),
+        error: Some(e.to_string()),
+    })
 }
 
 /// 验证 XML 命令

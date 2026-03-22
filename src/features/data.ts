@@ -103,6 +103,16 @@ export const featuresData: Feature[] = [
     tags: ['系统', '信息', '硬件', 'system', 'info', 'hardware'],
     implemented: true,
   },
+  {
+    id: 'scheduler-center',
+    name: '定时中心',
+    description: '创建本地提醒任务，支持一次性、每日、每周与倒计时规则',
+    icon: 'BellRing',
+    category: 'system',
+    route: '/feature/scheduler-center',
+    tags: ['提醒', '定时', 'scheduler', 'timer', 'countdown', 'notification'],
+    implemented: true,
+  },
 
   // 媒体类
   {

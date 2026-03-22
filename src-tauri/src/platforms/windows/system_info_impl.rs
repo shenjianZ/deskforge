@@ -4,8 +4,8 @@
 
 use crate::error::{AppError, AppResult};
 use crate::models::system_info::{
-    ComputerInfo, CpuInfo, DisplayInfo, DiskInfo, GpuInfo, HardwareInfo, InterfaceInfo,
-    MemoryInfo, NetworkInfo, OsInfo, SystemInfo,
+    ComputerInfo, CpuInfo, DiskInfo, DisplayInfo, GpuInfo, HardwareInfo, InterfaceInfo, MemoryInfo,
+    NetworkInfo, OsInfo, SystemInfo,
 };
 use crate::platforms::system_info::SystemInfoAccessor;
 use serde::Deserialize;
@@ -43,7 +43,7 @@ impl SystemInfoAccessor for WindowsSystemInfo {
                 vec![],
                 std::collections::HashMap::new(),
                 std::collections::HashMap::new(),
-            )
+            ),
         };
 
         Ok(SystemInfo {
@@ -115,25 +115,26 @@ struct Win32_NetworkAdapterConfiguration {
 }
 
 /// WMI 信息返回类型
-type WmiInfoResult = Result<(
-    HardwareInfo,
-    Vec<GpuInfo>,
-    std::collections::HashMap<String, String>,
-    std::collections::HashMap<String, Vec<String>>,
-), String>;
+type WmiInfoResult = Result<
+    (
+        HardwareInfo,
+        Vec<GpuInfo>,
+        std::collections::HashMap<String, String>,
+        std::collections::HashMap<String, Vec<String>>,
+    ),
+    String,
+>;
 
 #[cfg(windows)]
 impl WindowsSystemInfo {
     /// 获取 WMI 硬件信息（容错版本，某个查询失败不影响其他查询）
     fn get_wmi_info() -> WmiInfoResult {
-        use wmi::{COMLibrary, WMIConnection};
         use std::collections::HashMap;
+        use wmi::{COMLibrary, WMIConnection};
 
-        let com = COMLibrary::new()
-            .map_err(|e| format!("初始化 COM 失败: {:?}", e))?;
+        let com = COMLibrary::new().map_err(|e| format!("初始化 COM 失败: {:?}", e))?;
 
-        let wmi_con = WMIConnection::new(com)
-            .map_err(|e| format!("连接 WMI 失败: {:?}", e))?;
+        let wmi_con = WMIConnection::new(com).map_err(|e| format!("连接 WMI 失败: {:?}", e))?;
 
         // 1. 获取硬件信息（结合 ComputerSystem 和 BaseBoard）
         let hw_info = {
@@ -202,7 +203,9 @@ impl WindowsSystemInfo {
         let mut net_ips = HashMap::new();
         if let Ok(net_query_result) = wmi_con.query::<Win32_NetworkAdapterConfiguration>() {
             for net in net_query_result {
-                if let (Some(true), Some(mac), Some(ips)) = (net.ip_enabled, net.mac_address, net.ip_address) {
+                if let (Some(true), Some(mac), Some(ips)) =
+                    (net.ip_enabled, net.mac_address, net.ip_address)
+                {
                     // WMI 返回大写 MAC，sysinfo 返回小写，统一转为小写
                     net_ips.insert(mac.to_lowercase(), ips);
                 }
@@ -244,9 +247,9 @@ impl WindowsSystemInfo {
     /// 获取 CPU 信息
     fn get_cpu_info(sys: &System) -> AppResult<CpuInfo> {
         let cpus = sys.cpus();
-        let cpu = cpus.first().ok_or_else(|| {
-            AppError::SystemInfoFailed("无法获取 CPU 信息".to_string())
-        })?;
+        let cpu = cpus
+            .first()
+            .ok_or_else(|| AppError::SystemInfoFailed("无法获取 CPU 信息".to_string()))?;
 
         let physical_cores = sys.physical_core_count().unwrap_or(1);
         let usage = sys.global_cpu_info().cpu_usage();
@@ -270,12 +273,19 @@ impl WindowsSystemInfo {
             total_gb: Self::bytes_to_gb(total),
             available_gb: Self::bytes_to_gb(available),
             used_gb: Self::bytes_to_gb(used),
-            usage_percent: if total > 0.0 { (used / total) * 100.0 } else { 0.0 },
+            usage_percent: if total > 0.0 {
+                (used / total) * 100.0
+            } else {
+                0.0
+            },
         })
     }
 
     /// 获取磁盘信息
-    fn get_disk_info(_sys: &System, disk_labels: &std::collections::HashMap<String, String>) -> AppResult<Vec<DiskInfo>> {
+    fn get_disk_info(
+        _sys: &System,
+        disk_labels: &std::collections::HashMap<String, String>,
+    ) -> AppResult<Vec<DiskInfo>> {
         let mut disk_infos = Vec::new();
 
         // 在 sysinfo 0.30 中使用新的 API
@@ -305,7 +315,11 @@ impl WindowsSystemInfo {
                 total_gb: Self::bytes_to_gb(total),
                 available_gb: Self::bytes_to_gb(available),
                 used_gb: Self::bytes_to_gb(used),
-                usage_percent: if total > 0.0 { (used / total) * 100.0 } else { 0.0 },
+                usage_percent: if total > 0.0 {
+                    (used / total) * 100.0
+                } else {
+                    0.0
+                },
             });
         }
 
@@ -314,10 +328,10 @@ impl WindowsSystemInfo {
 
     /// 获取计算机信息
     fn get_computer_info() -> AppResult<ComputerInfo> {
+        use windows::core::PWSTR;
         use windows::Win32::System::SystemInformation::{
             ComputerNamePhysicalDnsHostname, GetComputerNameExW,
         };
-        use windows::core::PWSTR;
 
         let mut computer_name = [0u16; 256];
         let mut size = computer_name.len() as u32;
@@ -358,7 +372,10 @@ impl WindowsSystemInfo {
     }
 
     /// 获取网络信息
-    fn get_network_info(_sys: &System, net_ips: &std::collections::HashMap<String, Vec<String>>) -> AppResult<NetworkInfo> {
+    fn get_network_info(
+        _sys: &System,
+        net_ips: &std::collections::HashMap<String, Vec<String>>,
+    ) -> AppResult<NetworkInfo> {
         use sysinfo::Networks;
 
         let networks = Networks::new_with_refreshed_list();

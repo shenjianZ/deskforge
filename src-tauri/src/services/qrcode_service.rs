@@ -113,7 +113,7 @@ impl QrCodeService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::qrcode::{QrStyle};
+    use crate::models::qrcode::QrStyle;
 
     #[test]
     fn test_generate_preview() {

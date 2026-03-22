@@ -23,6 +23,7 @@ tauri-plugin-opener = "2.5"
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-autostart = "2.5"
+tauri-plugin-notification = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 sysinfo = "0.30"
@@ -42,6 +43,8 @@ sha2 = "0.10"
 md5 = "0.7"
 hmac = "0.12"
 hex = "0.4"
+rusqlite = { version = "0.32", features = ["bundled"] }
+notify-rust = "4.12"
 
 # HTML 处理相关依赖
 markup_fmt = "0.18"
@@ -70,6 +73,7 @@ windows = { version = "0.58", features = [
     "Win32_UI_Input_KeyboardAndMouse",
     "Win32_System_StationsAndDesktops",
     "Win32_System_SystemInformation",
+    "Win32_System_Console",
     "Win32_Storage_FileSystem",
 ] }
 wmi = "0.14"

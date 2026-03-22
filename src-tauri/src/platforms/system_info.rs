@@ -7,7 +7,7 @@ use crate::models::system_info::SystemInfo;
 
 #[cfg(not(windows))]
 use crate::models::system_info::{
-    ComputerInfo, CpuInfo, DisplayInfo, DiskInfo, GpuInfo, HardwareInfo, MemoryInfo, NetworkInfo,
+    ComputerInfo, CpuInfo, DiskInfo, DisplayInfo, GpuInfo, HardwareInfo, MemoryInfo, NetworkInfo,
     OsInfo,
 };
 
@@ -78,7 +78,11 @@ impl SystemInfoAccessor for DummySystemInfo {
                     total_gb: total / 1024.0 / 1024.0 / 1024.0,
                     available_gb: available / 1024.0 / 1024.0 / 1024.0,
                     used_gb: used / 1024.0 / 1024.0 / 1024.0,
-                    usage_percent: if total > 0.0 { (used / total) * 100.0 } else { 0.0 },
+                    usage_percent: if total > 0.0 {
+                        (used / total) * 100.0
+                    } else {
+                        0.0
+                    },
                 }
             },
             gpu: Vec::<GpuInfo>::new(),
@@ -96,7 +100,11 @@ impl SystemInfoAccessor for DummySystemInfo {
                         total_gb: total / 1024.0 / 1024.0 / 1024.0,
                         available_gb: available / 1024.0 / 1024.0 / 1024.0,
                         used_gb: used / 1024.0 / 1024.0 / 1024.0,
-                        usage_percent: if total > 0.0 { (used / total) * 100.0 } else { 0.0 },
+                        usage_percent: if total > 0.0 {
+                            (used / total) * 100.0
+                        } else {
+                            0.0
+                        },
                     }
                 })
                 .collect(),

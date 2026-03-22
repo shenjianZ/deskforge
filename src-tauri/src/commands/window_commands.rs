@@ -23,8 +23,7 @@ use crate::services::window_service::WindowService;
 /// ```
 #[tauri::command]
 pub fn toggle_window(window: Window) -> Result<(), String> {
-    WindowService::toggle_main_window(&window.app_handle())
-        .map_err(|e| e.to_string())
+    WindowService::toggle_main_window(&window.app_handle()).map_err(|e| e.to_string())
 }
 
 /// 隐藏窗口命令
@@ -44,8 +43,7 @@ pub fn toggle_window(window: Window) -> Result<(), String> {
 /// ```
 #[tauri::command]
 pub fn hide_window(window: Window) -> Result<(), String> {
-    WindowService::hide_main_window_to_tray(&window.app_handle())
-        .map_err(|e| e.to_string())
+    WindowService::hide_main_window_to_tray(&window.app_handle()).map_err(|e| e.to_string())
 }
 
 /// 显示窗口命令
@@ -65,21 +63,19 @@ pub fn hide_window(window: Window) -> Result<(), String> {
 /// ```
 #[tauri::command]
 pub fn show_window(window: Window) -> Result<(), String> {
-    WindowService::show_main_window(&window.app_handle())
-        .map_err(|e| e.to_string())
+    WindowService::show_main_window(&window.app_handle()).map_err(|e| e.to_string())
 }
 
 /// 获取主窗口状态
 #[tauri::command]
-pub fn get_main_window_state(window: Window) -> Result<crate::services::window_service::MainWindowState, String> {
-    WindowService::get_main_window_state(&window.app_handle())
-        .map_err(|e| e.to_string())
+pub fn get_main_window_state(
+    window: Window,
+) -> Result<crate::services::window_service::MainWindowState, String> {
+    WindowService::get_main_window_state(&window.app_handle()).map_err(|e| e.to_string())
 }
 
 /// 切换主窗口最大化状态
 #[tauri::command]
 pub fn toggle_maximize_main_window(window: Window) -> Result<(), String> {
-    WindowService::toggle_maximize_main_window(&window.app_handle())
-        .map_err(|e| e.to_string())
+    WindowService::toggle_maximize_main_window(&window.app_handle()).map_err(|e| e.to_string())
 }
-

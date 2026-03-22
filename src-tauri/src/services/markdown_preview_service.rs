@@ -2,7 +2,10 @@
 //!
 //! 提供本地资源解析与导出文件保存能力
 
-use std::{fs, path::{Path, PathBuf}};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 
@@ -14,14 +17,18 @@ use crate::{
 pub struct MarkdownPreviewService;
 
 impl MarkdownPreviewService {
-    pub fn resolve_asset(asset_path: &str, base_dir: Option<&str>) -> AppResult<ResolvedMarkdownAsset> {
+    pub fn resolve_asset(
+        asset_path: &str,
+        base_dir: Option<&str>,
+    ) -> AppResult<ResolvedMarkdownAsset> {
         let normalized_input = normalize_asset_path(asset_path);
         if normalized_input.is_empty() {
             return Err(AppError::InvalidData("图片路径不能为空".to_string()));
         }
 
         let resolved = resolve_to_local_path(&normalized_input, base_dir)?;
-        let bytes = fs::read(&resolved).map_err(|error| AppError::IoError(format!("读取 Markdown 资源失败: {}", error)))?;
+        let bytes = fs::read(&resolved)
+            .map_err(|error| AppError::IoError(format!("读取 Markdown 资源失败: {}", error)))?;
         let mime = detect_mime_type(&resolved, &bytes);
 
         Ok(ResolvedMarkdownAsset {
@@ -35,13 +42,16 @@ impl MarkdownPreviewService {
         let bytes = STANDARD
             .decode(content_base64)
             .map_err(|error| AppError::InvalidData(format!("导出内容无效: {}", error)))?;
-        fs::write(output_path, bytes).map_err(|error| AppError::IoError(format!("保存导出文件失败: {}", error)))?;
+        fs::write(output_path, bytes)
+            .map_err(|error| AppError::IoError(format!("保存导出文件失败: {}", error)))?;
         Ok(())
     }
 
     pub fn resolve_pdf_font() -> AppResult<ResolvedMarkdownPdfFont> {
         let candidate = find_pdf_font_candidate().ok_or_else(|| {
-            AppError::InvalidData("未找到可用于 PDF 导出的中文字体，请安装黑体、等线或宋体增强字体".to_string())
+            AppError::InvalidData(
+                "未找到可用于 PDF 导出的中文字体，请安装黑体、等线或宋体增强字体".to_string(),
+            )
         })?;
 
         let bytes = fs::read(&candidate)
@@ -78,7 +88,11 @@ fn resolve_to_local_path(input: &str, base_dir: Option<&str>) -> AppResult<PathB
     };
 
     let canonical = candidate.canonicalize().map_err(|error| {
-        AppError::IoError(format!("无法定位图片资源 {}: {}", candidate.to_string_lossy(), error))
+        AppError::IoError(format!(
+            "无法定位图片资源 {}: {}",
+            candidate.to_string_lossy(),
+            error
+        ))
     })?;
 
     if !canonical.exists() {
@@ -112,7 +126,9 @@ fn normalize_display_path(path: &Path) -> String {
 
 fn detect_mime_type(path: &Path, bytes: &[u8]) -> &'static str {
     if matches!(
-        path.extension().and_then(|ext| ext.to_str()).map(|ext| ext.eq_ignore_ascii_case("svg")),
+        path.extension()
+            .and_then(|ext| ext.to_str())
+            .map(|ext| ext.eq_ignore_ascii_case("svg")),
         Some(true)
     ) {
         return "image/svg+xml";

@@ -35,8 +35,8 @@ use serde_json::{self, Value};
 /// ```
 pub fn format_json(input: &str, config: &JsonFormatConfig) -> Result<String, String> {
     // 解析 JSON
-    let mut value: Value = serde_json::from_str(input)
-        .map_err(|e| format!("JSON 解析失败: {}", e))?;
+    let mut value: Value =
+        serde_json::from_str(input).map_err(|e| format!("JSON 解析失败: {}", e))?;
 
     // 如果需要排序 key
     if config.sort_keys {
@@ -52,8 +52,7 @@ pub fn format_json(input: &str, config: &JsonFormatConfig) -> Result<String, Str
                 .map(|s| replace_indent(&s, &indent_str))
         }
         FormatMode::Compact => {
-            serde_json::to_string(&value)
-                .map_err(|e| format!("JSON 序列化失败: {}", e))
+            serde_json::to_string(&value).map_err(|e| format!("JSON 序列化失败: {}", e))
         }
     }
 }
@@ -91,10 +90,8 @@ fn sort_keys(value: &mut Value) {
     match value {
         Value::Object(map) => {
             // 收集所有 key-value 对
-            let mut entries: Vec<(String, Value)> = map
-                .iter()
-                .map(|(k, v)| (k.clone(), v.clone()))
-                .collect();
+            let mut entries: Vec<(String, Value)> =
+                map.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
 
             // 排序 key
             entries.sort_by(|a, b| a.0.cmp(&b.0));
@@ -212,11 +209,9 @@ fn parse_error_position(error_msg: &str) -> (Option<usize>, Option<usize>) {
 ///
 /// 当输入不是有效的 JSON 时返回错误
 pub fn compact_json(input: &str) -> Result<String, String> {
-    let value: Value = serde_json::from_str(input)
-        .map_err(|e| format!("JSON 解析失败: {}", e))?;
+    let value: Value = serde_json::from_str(input).map_err(|e| format!("JSON 解析失败: {}", e))?;
 
-    serde_json::to_string(&value)
-        .map_err(|e| format!("JSON 序列化失败: {}", e))
+    serde_json::to_string(&value).map_err(|e| format!("JSON 序列化失败: {}", e))
 }
 
 #[cfg(test)]

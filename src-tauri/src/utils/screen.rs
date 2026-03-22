@@ -40,7 +40,9 @@ impl WindowsScreen {
         unsafe {
             let screen_dc = GetDC(HWND::default());
             if screen_dc.is_invalid() {
-                return Err(AppError::ScreenAccessFailed("无法获取屏幕设备上下文".to_string()));
+                return Err(AppError::ScreenAccessFailed(
+                    "无法获取屏幕设备上下文".to_string(),
+                ));
             }
 
             let color = GetPixel(screen_dc, x, y);
@@ -74,14 +76,11 @@ impl WindowsScreen {
     ///
     /// 该函数用于前端放大镜实时预览。
     #[cfg(windows)]
-    pub fn capture_region_rgba(
-        x: i32,
-        y: i32,
-        width: i32,
-        height: i32,
-    ) -> AppResult<Vec<u8>> {
+    pub fn capture_region_rgba(x: i32, y: i32, width: i32, height: i32) -> AppResult<Vec<u8>> {
         if width <= 0 || height <= 0 {
-            return Err(AppError::ScreenAccessFailed("无效的捕获区域尺寸".to_string()));
+            return Err(AppError::ScreenAccessFailed(
+                "无效的捕获区域尺寸".to_string(),
+            ));
         }
 
         // 将捕获区域 clamp 到“虚拟屏幕”范围，避免在屏幕边缘 BitBlt 失败
@@ -92,7 +91,9 @@ impl WindowsScreen {
 
         // 如果请求区域比虚拟屏幕还大，直接报错（避免溢出/异常）
         if width > v_w || height > v_h {
-            return Err(AppError::ScreenAccessFailed("捕获区域超出屏幕范围".to_string()));
+            return Err(AppError::ScreenAccessFailed(
+                "捕获区域超出屏幕范围".to_string(),
+            ));
         }
 
         let max_x = v_left + v_w - width;
@@ -104,14 +105,18 @@ impl WindowsScreen {
             // 屏幕 DC
             let screen_dc = GetDC(HWND::default());
             if screen_dc.is_invalid() {
-                return Err(AppError::ScreenAccessFailed("无法获取屏幕设备上下文".to_string()));
+                return Err(AppError::ScreenAccessFailed(
+                    "无法获取屏幕设备上下文".to_string(),
+                ));
             }
 
             // 内存 DC + 位图
             let mem_dc = CreateCompatibleDC(screen_dc);
             if mem_dc.is_invalid() {
                 ReleaseDC(HWND::default(), screen_dc);
-                return Err(AppError::ScreenAccessFailed("无法创建兼容设备上下文".to_string()));
+                return Err(AppError::ScreenAccessFailed(
+                    "无法创建兼容设备上下文".to_string(),
+                ));
             }
 
             let bitmap: HBITMAP = CreateCompatibleBitmap(screen_dc, width, height);
@@ -172,7 +177,9 @@ impl WindowsScreen {
             let _ = DeleteDC(mem_dc);
 
             if lines == 0 {
-                return Err(AppError::ScreenAccessFailed("GetDIBits 读取失败".to_string()));
+                return Err(AppError::ScreenAccessFailed(
+                    "GetDIBits 读取失败".to_string(),
+                ));
             }
 
             // BGRA -> RGBA（给前端 canvas 更直接）
@@ -189,12 +196,7 @@ impl WindowsScreen {
     }
 
     #[cfg(not(windows))]
-    pub fn capture_region_rgba(
-        _x: i32,
-        _y: i32,
-        _width: i32,
-        _height: i32,
-    ) -> AppResult<Vec<u8>> {
+    pub fn capture_region_rgba(_x: i32, _y: i32, _width: i32, _height: i32) -> AppResult<Vec<u8>> {
         Err(AppError::PlatformNotSupported(
             "当前平台暂不支持屏幕区域捕获".to_string(),
         ))

@@ -264,4 +264,3 @@ fn default_true() -> bool {
 fn default_separator() -> String {
     "_".to_string()
 }
-

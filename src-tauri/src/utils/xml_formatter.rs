@@ -85,8 +85,8 @@ fn rewrite_xml(
         buf.clear();
     }
 
-    let result = String::from_utf8(writer.into_inner())
-        .map_err(|e| format!("编码转换失败: {}", e))?;
+    let result =
+        String::from_utf8(writer.into_inner()).map_err(|e| format!("编码转换失败: {}", e))?;
 
     Ok(result)
 }

@@ -14,8 +14,9 @@ use webp::Encoder as WebpEncoder;
 use crate::{
     error::{AppError, AppResult},
     models::image_converter::{
-        ImageCompressionOptions, ImageConversionOptions, ImageConversionPreviewResult, ImageCropOptions, ImageOutputFormat,
-        ImageResampleMode, ImageResizeOptions, ImageSourceInfo,
+        ImageCompressionOptions, ImageConversionOptions, ImageConversionPreviewResult,
+        ImageCropOptions, ImageOutputFormat, ImageResampleMode, ImageResizeOptions,
+        ImageSourceInfo,
     },
 };
 
@@ -53,21 +54,49 @@ impl ImageConverterService {
         })
     }
 
-    pub fn generate_preview(input_path: &str, options: &ImageConversionOptions) -> AppResult<ImageConversionPreviewResult> {
+    pub fn generate_preview(
+        input_path: &str,
+        options: &ImageConversionOptions,
+    ) -> AppResult<ImageConversionPreviewResult> {
         let loaded = load_image(input_path)?;
         validate_conversion_options(options)?;
-        let prepared = prepare_conversion_image(&loaded.image, options.target_format, options.ico_size);
-        build_preview_result(&loaded, prepared, options.target_format, options.quality, options.webp_lossless, &options.background_color, options.ico_size)
+        let prepared =
+            prepare_conversion_image(&loaded.image, options.target_format, options.ico_size);
+        build_preview_result(
+            &loaded,
+            prepared,
+            options.target_format,
+            options.quality,
+            options.webp_lossless,
+            &options.background_color,
+            options.ico_size,
+        )
     }
 
-    pub fn save_converted_image(input_path: &str, output_path: &str, options: &ImageConversionOptions) -> AppResult<()> {
+    pub fn save_converted_image(
+        input_path: &str,
+        output_path: &str,
+        options: &ImageConversionOptions,
+    ) -> AppResult<()> {
         let loaded = load_image(input_path)?;
         validate_conversion_options(options)?;
-        let prepared = prepare_conversion_image(&loaded.image, options.target_format, options.ico_size);
-        save_processed_image(prepared, output_path, options.target_format, options.quality, options.webp_lossless, &options.background_color, options.ico_size)
+        let prepared =
+            prepare_conversion_image(&loaded.image, options.target_format, options.ico_size);
+        save_processed_image(
+            prepared,
+            output_path,
+            options.target_format,
+            options.quality,
+            options.webp_lossless,
+            &options.background_color,
+            options.ico_size,
+        )
     }
 
-    pub fn generate_compression_preview(input_path: &str, options: &ImageCompressionOptions) -> AppResult<ImageConversionPreviewResult> {
+    pub fn generate_compression_preview(
+        input_path: &str,
+        options: &ImageCompressionOptions,
+    ) -> AppResult<ImageConversionPreviewResult> {
         let loaded = load_image(input_path)?;
         validate_compression_options(options)?;
         build_preview_result(
@@ -81,7 +110,11 @@ impl ImageConverterService {
         )
     }
 
-    pub fn save_compressed_image(input_path: &str, output_path: &str, options: &ImageCompressionOptions) -> AppResult<()> {
+    pub fn save_compressed_image(
+        input_path: &str,
+        output_path: &str,
+        options: &ImageCompressionOptions,
+    ) -> AppResult<()> {
         let loaded = load_image(input_path)?;
         validate_compression_options(options)?;
         save_processed_image(
@@ -95,7 +128,10 @@ impl ImageConverterService {
         )
     }
 
-    pub fn generate_crop_preview(input_path: &str, options: &ImageCropOptions) -> AppResult<ImageConversionPreviewResult> {
+    pub fn generate_crop_preview(
+        input_path: &str,
+        options: &ImageCropOptions,
+    ) -> AppResult<ImageConversionPreviewResult> {
         let loaded = load_image(input_path)?;
         validate_crop_options(&loaded, options)?;
         let prepared = prepare_cropped_image(&loaded.image, options)?;
@@ -110,7 +146,11 @@ impl ImageConverterService {
         )
     }
 
-    pub fn save_cropped_image(input_path: &str, output_path: &str, options: &ImageCropOptions) -> AppResult<()> {
+    pub fn save_cropped_image(
+        input_path: &str,
+        output_path: &str,
+        options: &ImageCropOptions,
+    ) -> AppResult<()> {
         let loaded = load_image(input_path)?;
         validate_crop_options(&loaded, options)?;
         let prepared = prepare_cropped_image(&loaded.image, options)?;
@@ -125,7 +165,10 @@ impl ImageConverterService {
         )
     }
 
-    pub fn generate_resize_preview(input_path: &str, options: &ImageResizeOptions) -> AppResult<ImageConversionPreviewResult> {
+    pub fn generate_resize_preview(
+        input_path: &str,
+        options: &ImageResizeOptions,
+    ) -> AppResult<ImageConversionPreviewResult> {
         let loaded = load_image(input_path)?;
         validate_resize_options(options)?;
         let prepared = prepare_resized_image(&loaded.image, options);
@@ -140,7 +183,11 @@ impl ImageConverterService {
         )
     }
 
-    pub fn save_resized_image(input_path: &str, output_path: &str, options: &ImageResizeOptions) -> AppResult<()> {
+    pub fn save_resized_image(
+        input_path: &str,
+        output_path: &str,
+        options: &ImageResizeOptions,
+    ) -> AppResult<()> {
         let loaded = load_image(input_path)?;
         validate_resize_options(options)?;
         let prepared = prepare_resized_image(&loaded.image, options);
@@ -165,9 +212,23 @@ fn build_preview_result(
     background_color: &str,
     ico_size: u32,
 ) -> AppResult<ImageConversionPreviewResult> {
-    let encoded = encode_image(prepared.clone(), target_format, quality, webp_lossless, background_color, ico_size)?;
+    let encoded = encode_image(
+        prepared.clone(),
+        target_format,
+        quality,
+        webp_lossless,
+        background_color,
+        ico_size,
+    )?;
     let preview_format = get_preview_format(target_format);
-    let preview_encoded = encode_image(prepared, preview_format, quality, webp_lossless, background_color, ico_size)?;
+    let preview_encoded = encode_image(
+        prepared,
+        preview_format,
+        quality,
+        webp_lossless,
+        background_color,
+        ico_size,
+    )?;
     let mime = match preview_format {
         ImageOutputFormat::Png => "image/png",
         ImageOutputFormat::Jpeg => "image/jpeg",
@@ -178,7 +239,11 @@ fn build_preview_result(
     };
 
     Ok(ImageConversionPreviewResult {
-        data_url: format!("data:{};base64,{}", mime, STANDARD.encode(&preview_encoded.bytes)),
+        data_url: format!(
+            "data:{};base64,{}",
+            mime,
+            STANDARD.encode(&preview_encoded.bytes)
+        ),
         preview_format: preview_format.as_str().to_string(),
         output_format: target_format.as_str().to_string(),
         source_format: loaded.source_format.clone(),
@@ -201,14 +266,32 @@ fn save_processed_image(
     background_color: &str,
     ico_size: u32,
 ) -> AppResult<()> {
-    let encoded = encode_image(prepared, target_format, quality, webp_lossless, background_color, ico_size)?;
-    fs::write(output_path, encoded.bytes).map_err(|error| AppError::IoError(format!("保存文件失败: {}", error)))?;
+    let encoded = encode_image(
+        prepared,
+        target_format,
+        quality,
+        webp_lossless,
+        background_color,
+        ico_size,
+    )?;
+    fs::write(output_path, encoded.bytes)
+        .map_err(|error| AppError::IoError(format!("保存文件失败: {}", error)))?;
     Ok(())
 }
 
 fn build_source_preview_data_url(image: &RgbaImage) -> AppResult<String> {
-    let encoded = encode_image(image.clone(), ImageOutputFormat::Png, 92, false, "#FFFFFF", 256)?;
-    Ok(format!("data:image/png;base64,{}", STANDARD.encode(&encoded.bytes)))
+    let encoded = encode_image(
+        image.clone(),
+        ImageOutputFormat::Png,
+        92,
+        false,
+        "#FFFFFF",
+        256,
+    )?;
+    Ok(format!(
+        "data:image/png;base64,{}",
+        STANDARD.encode(&encoded.bytes)
+    ))
 }
 
 fn get_preview_format(target_format: ImageOutputFormat) -> ImageOutputFormat {
@@ -228,8 +311,13 @@ fn validate_conversion_options(options: &ImageConversionOptions) -> AppResult<()
 fn validate_compression_options(options: &ImageCompressionOptions) -> AppResult<()> {
     validate_quality(options.quality)?;
     parse_hex_color(&options.background_color)?;
-    if !matches!(options.target_format, ImageOutputFormat::Png | ImageOutputFormat::Jpeg | ImageOutputFormat::Webp) {
-        return Err(AppError::InvalidData("压缩工具仅支持输出 PNG、JPEG 或 WebP".to_string()));
+    if !matches!(
+        options.target_format,
+        ImageOutputFormat::Png | ImageOutputFormat::Jpeg | ImageOutputFormat::Webp
+    ) {
+        return Err(AppError::InvalidData(
+            "压缩工具仅支持输出 PNG、JPEG 或 WebP".to_string(),
+        ));
     }
     Ok(())
 }
@@ -256,8 +344,11 @@ fn validate_crop_options(loaded: &LoadedImage, options: &ImageCropOptions) -> Ap
         validate_output_bounds(output_size, output_size)?;
     }
 
-    if options.target_format == ImageOutputFormat::Ico && options.crop_width != options.crop_height {
-        return Err(AppError::InvalidData("ICO 导出要求裁剪区域为 1:1 方形".to_string()));
+    if options.target_format == ImageOutputFormat::Ico && options.crop_width != options.crop_height
+    {
+        return Err(AppError::InvalidData(
+            "ICO 导出要求裁剪区域为 1:1 方形".to_string(),
+        ));
     }
 
     Ok(())
@@ -271,8 +362,13 @@ fn validate_resize_options(options: &ImageResizeOptions) -> AppResult<()> {
     }
     validate_output_bounds(options.target_width, options.target_height)?;
 
-    if matches!(options.target_format, ImageOutputFormat::Bmp | ImageOutputFormat::Tiff | ImageOutputFormat::Ico) {
-        return Err(AppError::InvalidData("缩放工具首版仅支持输出 PNG、JPEG 或 WebP".to_string()));
+    if matches!(
+        options.target_format,
+        ImageOutputFormat::Bmp | ImageOutputFormat::Tiff | ImageOutputFormat::Ico
+    ) {
+        return Err(AppError::InvalidData(
+            "缩放工具首版仅支持输出 PNG、JPEG 或 WebP".to_string(),
+        ));
     }
 
     Ok(())
@@ -287,7 +383,9 @@ fn validate_output_bounds(width: u32, height: u32) -> AppResult<()> {
     }
 
     if (width as u64) * (height as u64) > MAX_IMAGE_PIXELS {
-        return Err(AppError::InvalidData("输出像素总量过大，请缩小尺寸".to_string()));
+        return Err(AppError::InvalidData(
+            "输出像素总量过大，请缩小尺寸".to_string(),
+        ));
     }
 
     Ok(())
@@ -295,14 +393,18 @@ fn validate_output_bounds(width: u32, height: u32) -> AppResult<()> {
 
 fn validate_quality(quality: u8) -> AppResult<()> {
     if quality == 0 || quality > 100 {
-        return Err(AppError::InvalidData("质量必须在 1 到 100 之间".to_string()));
+        return Err(AppError::InvalidData(
+            "质量必须在 1 到 100 之间".to_string(),
+        ));
     }
     Ok(())
 }
 
 fn validate_ico_size(size: u32) -> AppResult<()> {
     if !matches!(size, 16 | 32 | 48 | 64 | 128 | 256 | 512) {
-        return Err(AppError::InvalidData("ICO 尺寸必须为 16、32、48、64、128、256 或 512".to_string()));
+        return Err(AppError::InvalidData(
+            "ICO 尺寸必须为 16、32、48、64、128、256 或 512".to_string(),
+        ));
     }
     Ok(())
 }
@@ -313,7 +415,8 @@ fn load_image(input_path: &str) -> AppResult<LoadedImage> {
         return Err(AppError::IoError("输入文件不存在".to_string()));
     }
 
-    let bytes = fs::read(path).map_err(|error| AppError::IoError(format!("读取图片文件失败: {}", error)))?;
+    let bytes = fs::read(path)
+        .map_err(|error| AppError::IoError(format!("读取图片文件失败: {}", error)))?;
     let source_bytes = bytes.len();
     let source_format = detect_input_format(path, &bytes)?;
     let rgba = if source_format == "svg" {
@@ -353,7 +456,11 @@ fn detect_input_format(path: &Path, bytes: &[u8]) -> AppResult<String> {
         _ => {
             return Err(AppError::InvalidData(format!(
                 "暂不支持的图片格式: {}",
-                guessed.extensions_str().first().copied().unwrap_or("unknown")
+                guessed
+                    .extensions_str()
+                    .first()
+                    .copied()
+                    .unwrap_or("unknown")
             )))
         }
     };
@@ -363,8 +470,8 @@ fn detect_input_format(path: &Path, bytes: &[u8]) -> AppResult<String> {
 
 fn render_svg_to_rgba_bytes(bytes: &[u8]) -> AppResult<RgbaImage> {
     let options = usvg::Options::default();
-    let tree =
-        usvg::Tree::from_data(bytes, &options).map_err(|error| AppError::InvalidData(format!("解析 SVG 失败: {}", error)))?;
+    let tree = usvg::Tree::from_data(bytes, &options)
+        .map_err(|error| AppError::InvalidData(format!("解析 SVG 失败: {}", error)))?;
     let size = tree.size().to_int_size();
     let mut pixmap = Pixmap::new(size.width(), size.height())
         .ok_or_else(|| AppError::InvalidData("SVG 尺寸无效，无法创建位图".to_string()))?;
@@ -375,7 +482,9 @@ fn render_svg_to_rgba_bytes(bytes: &[u8]) -> AppResult<RgbaImage> {
 }
 
 fn is_svg_input(bytes: &[u8], path: &Path) -> bool {
-    let sniff = String::from_utf8_lossy(&bytes[..bytes.len().min(256)]).trim_start().to_ascii_lowercase();
+    let sniff = String::from_utf8_lossy(&bytes[..bytes.len().min(256)])
+        .trim_start()
+        .to_ascii_lowercase();
     if sniff.starts_with("<svg") || sniff.starts_with("<?xml") {
         return sniff.contains("<svg");
     }
@@ -388,7 +497,11 @@ fn is_svg_input(bytes: &[u8], path: &Path) -> bool {
     )
 }
 
-fn prepare_conversion_image(image: &RgbaImage, target_format: ImageOutputFormat, ico_size: u32) -> RgbaImage {
+fn prepare_conversion_image(
+    image: &RgbaImage,
+    target_format: ImageOutputFormat,
+    ico_size: u32,
+) -> RgbaImage {
     if target_format == ImageOutputFormat::Ico {
         image::imageops::resize(image, ico_size, ico_size, FilterType::Lanczos3)
     } else {
@@ -397,12 +510,24 @@ fn prepare_conversion_image(image: &RgbaImage, target_format: ImageOutputFormat,
 }
 
 fn prepare_cropped_image(image: &RgbaImage, options: &ImageCropOptions) -> AppResult<RgbaImage> {
-    let cropped = image::imageops::crop_imm(image, options.crop_x, options.crop_y, options.crop_width, options.crop_height).to_image();
+    let cropped = image::imageops::crop_imm(
+        image,
+        options.crop_x,
+        options.crop_y,
+        options.crop_width,
+        options.crop_height,
+    )
+    .to_image();
 
     let processed = if let Some(output_size) = options.output_size {
         image::imageops::resize(&cropped, output_size, output_size, FilterType::Lanczos3)
     } else if options.target_format == ImageOutputFormat::Ico {
-        image::imageops::resize(&cropped, options.ico_size, options.ico_size, FilterType::Lanczos3)
+        image::imageops::resize(
+            &cropped,
+            options.ico_size,
+            options.ico_size,
+            FilterType::Lanczos3,
+        )
     } else {
         cropped
     };
@@ -430,7 +555,9 @@ fn encode_image(
     background_color: &str,
     ico_size: u32,
 ) -> AppResult<EncodedImage> {
-    if target_format == ImageOutputFormat::Ico && (image.width() != ico_size || image.height() != ico_size) {
+    if target_format == ImageOutputFormat::Ico
+        && (image.width() != ico_size || image.height() != ico_size)
+    {
         image = image::imageops::resize(&image, ico_size, ico_size, FilterType::Lanczos3);
     }
 
@@ -453,7 +580,12 @@ fn encode_image(
     })
 }
 
-fn encode_to_bytes(image: RgbaImage, target_format: ImageOutputFormat, quality: u8, webp_lossless: bool) -> AppResult<Vec<u8>> {
+fn encode_to_bytes(
+    image: RgbaImage,
+    target_format: ImageOutputFormat,
+    quality: u8,
+    webp_lossless: bool,
+) -> AppResult<Vec<u8>> {
     let dynamic = DynamicImage::ImageRgba8(image.clone());
     let mut bytes = Vec::new();
 
@@ -480,7 +612,9 @@ fn encode_to_bytes(image: RgbaImage, target_format: ImageOutputFormat, quality: 
         }
         ImageOutputFormat::Webp => {
             if webp_lossless {
-                bytes = WebpEncoder::from_rgba(image.as_raw(), image.width(), image.height()).encode_lossless().to_vec();
+                bytes = WebpEncoder::from_rgba(image.as_raw(), image.width(), image.height())
+                    .encode_lossless()
+                    .to_vec();
             } else {
                 bytes = WebpEncoder::from_rgba(image.as_raw(), image.width(), image.height())
                     .encode(quality as f32)
@@ -496,12 +630,17 @@ fn parse_hex_color(input: &str) -> AppResult<Rgba<u8>> {
     let value = input.trim();
     let raw = value.strip_prefix('#').unwrap_or(value);
     if raw.len() != 6 {
-        return Err(AppError::InvalidData("背景色必须是 #RRGGBB 格式".to_string()));
+        return Err(AppError::InvalidData(
+            "背景色必须是 #RRGGBB 格式".to_string(),
+        ));
     }
 
-    let red = u8::from_str_radix(&raw[0..2], 16).map_err(|_| AppError::InvalidData("背景色格式无效".to_string()))?;
-    let green = u8::from_str_radix(&raw[2..4], 16).map_err(|_| AppError::InvalidData("背景色格式无效".to_string()))?;
-    let blue = u8::from_str_radix(&raw[4..6], 16).map_err(|_| AppError::InvalidData("背景色格式无效".to_string()))?;
+    let red = u8::from_str_radix(&raw[0..2], 16)
+        .map_err(|_| AppError::InvalidData("背景色格式无效".to_string()))?;
+    let green = u8::from_str_radix(&raw[2..4], 16)
+        .map_err(|_| AppError::InvalidData("背景色格式无效".to_string()))?;
+    let blue = u8::from_str_radix(&raw[4..6], 16)
+        .map_err(|_| AppError::InvalidData("背景色格式无效".to_string()))?;
 
     Ok(Rgba([red, green, blue, 255]))
 }
@@ -554,9 +693,18 @@ mod tests {
 
     #[test]
     fn tiff_preview_falls_back_to_png() {
-        assert_eq!(get_preview_format(ImageOutputFormat::Tiff), ImageOutputFormat::Png);
-        assert_eq!(get_preview_format(ImageOutputFormat::Ico), ImageOutputFormat::Png);
-        assert_eq!(get_preview_format(ImageOutputFormat::Jpeg), ImageOutputFormat::Jpeg);
+        assert_eq!(
+            get_preview_format(ImageOutputFormat::Tiff),
+            ImageOutputFormat::Png
+        );
+        assert_eq!(
+            get_preview_format(ImageOutputFormat::Ico),
+            ImageOutputFormat::Png
+        );
+        assert_eq!(
+            get_preview_format(ImageOutputFormat::Jpeg),
+            ImageOutputFormat::Jpeg
+        );
     }
 
     #[test]
@@ -624,7 +772,8 @@ mod tests {
             .write_to(&mut Cursor::new(&mut bytes), ImageFormat::Jpeg)
             .expect("jpeg should encode");
 
-        let format = detect_input_format(Path::new("sample.jfif"), &bytes).expect("format should be detected");
+        let format = detect_input_format(Path::new("sample.jfif"), &bytes)
+            .expect("format should be detected");
         assert_eq!(format, "jpeg");
     }
 }

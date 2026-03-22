@@ -36,13 +36,12 @@ use crate::services::json_format_service::JsonFormatService;
 /// ```
 #[tauri::command]
 pub fn format_json(input: String, config: JsonFormatConfig) -> JsonFormatResult {
-    JsonFormatService::format(&input, &config)
-        .unwrap_or_else(|e| JsonFormatResult {
-            success: false,
-            result: String::new(),
-            error: Some(e.to_string()),
-            is_valid: false,
-        })
+    JsonFormatService::format(&input, &config).unwrap_or_else(|e| JsonFormatResult {
+        success: false,
+        result: String::new(),
+        error: Some(e.to_string()),
+        is_valid: false,
+    })
 }
 
 /// 验证 JSON 命令

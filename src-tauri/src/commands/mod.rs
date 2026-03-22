@@ -15,8 +15,8 @@ pub mod markdown_preview_commands;
 pub mod picker_color_commands;
 pub mod public_ip_tool_commands;
 pub mod qrcode_commands;
+pub mod scheduler_commands;
 pub mod system_info_commands;
 pub mod whois_tool_commands;
 pub mod window_commands;
 pub mod xml_format_commands;
-

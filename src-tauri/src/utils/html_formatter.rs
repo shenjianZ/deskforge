@@ -42,8 +42,8 @@ fn clean_angular_comments(input: &str) -> String {
 
 /// 美化 HTML 字符串
 fn prettify_html(input: &str, indent_size: u32) -> Result<String, String> {
-    use markup_fmt::{format_text, Language};
     use markup_fmt::config::{FormatOptions, LayoutOptions};
+    use markup_fmt::{format_text, Language};
     use std::borrow::Cow;
 
     let options = FormatOptions {
@@ -59,25 +59,26 @@ fn prettify_html(input: &str, indent_size: u32) -> Result<String, String> {
         ..Default::default()
     };
 
-    format_text(input, Language::Html, &options, |_, _| Ok::<Cow<'_, str>, ()>(String::new().into()))
-        .map_err(|_| "HTML 格式化失败".to_string())
+    format_text(input, Language::Html, &options, |_, _| {
+        Ok::<Cow<'_, str>, ()>(String::new().into())
+    })
+    .map_err(|_| "HTML 格式化失败".to_string())
 }
 
 /// 压缩 HTML 字符串
 pub fn compact_html(input: &str) -> Result<String, String> {
-    use minify_html::{Cfg, minify};
+    use minify_html::{minify, Cfg};
 
     let cfg = Cfg {
-        minify_js: true,        // 压缩内联 JavaScript
-        minify_css: true,       // 压缩内联 CSS
+        minify_js: true,         // 压缩内联 JavaScript
+        minify_css: true,        // 压缩内联 CSS
         keep_closing_tags: true, // 保留闭合标签以获得更好的兼容性
         keep_comments: false,    // 移除注释以减小体积
         ..Default::default()
     };
 
     let result = minify(input.as_bytes(), &cfg);
-    String::from_utf8(result)
-        .map_err(|e| format!("HTML 压缩结果编码错误: {}", e))
+    String::from_utf8(result).map_err(|e| format!("HTML 压缩结果编码错误: {}", e))
 }
 
 /// 验证 HTML 字符串

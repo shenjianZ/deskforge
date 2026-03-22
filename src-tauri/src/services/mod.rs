@@ -14,8 +14,8 @@ pub mod json_format_service;
 pub mod markdown_preview_service;
 pub mod public_ip_tool_service;
 pub mod qrcode_service;
+pub mod scheduler_service;
 pub mod system_info_service;
 pub mod whois_tool_service;
 pub mod window_service;
 pub mod xml_format_service;
-

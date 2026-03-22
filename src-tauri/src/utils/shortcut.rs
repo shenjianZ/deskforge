@@ -44,4 +44,3 @@ pub fn register_global_shortcuts(app: &tauri::App) -> Result<(), String> {
     println!("全局快捷键 Alt+Space 注册成功");
     Ok(())
 }
-

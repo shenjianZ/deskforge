@@ -22,12 +22,8 @@ pub fn format_css(input: &str, config: &CssFormatConfig) -> Result<String, Strin
     }
 
     match config.mode {
-        crate::models::code_format::FormatMode::Pretty => {
-            prettify_css(input, config)
-        }
-        crate::models::code_format::FormatMode::Compact => {
-            compact_css(input)
-        }
+        crate::models::code_format::FormatMode::Pretty => prettify_css(input, config),
+        crate::models::code_format::FormatMode::Compact => compact_css(input),
     }
 }
 
@@ -99,8 +95,8 @@ fn apply_css_indent(code: &str, indent_size: u32) -> String {
 
 /// 压缩模式格式化
 fn compact_css(input: &str) -> Result<String, String> {
-    use lightningcss::stylesheet::{ParserOptions, StyleSheet};
     use lightningcss::printer::PrinterOptions;
+    use lightningcss::stylesheet::{ParserOptions, StyleSheet};
 
     // 解析 CSS
     let stylesheet = StyleSheet::parse(input, ParserOptions::default())

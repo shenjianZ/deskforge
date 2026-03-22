@@ -8,9 +8,11 @@ use base64::{engine::general_purpose, Engine as _};
 use image::GenericImageView;
 
 use crate::error::AppResult;
-use crate::models::base64_tool::{Base64ImageResult, Base64ProcessConfig, Base64ProcessResult, Base64ValidateResult};
-use crate::AppError;
+use crate::models::base64_tool::{
+    Base64ImageResult, Base64ProcessConfig, Base64ProcessResult, Base64ValidateResult,
+};
 use crate::utils::base64_tool;
+use crate::AppError;
 
 /// Base64 工具服务
 pub struct Base64ToolService;
@@ -85,7 +87,8 @@ impl Base64ToolService {
             return Err(AppError::IoError("输入文件不存在".to_string()));
         }
 
-        let bytes = fs::read(path).map_err(|error| AppError::IoError(format!("读取图片文件失败: {}", error)))?;
+        let bytes = fs::read(path)
+            .map_err(|error| AppError::IoError(format!("读取图片文件失败: {}", error)))?;
         build_image_result_from_bytes(&bytes, None)
     }
 
@@ -98,7 +101,8 @@ impl Base64ToolService {
     /// 将 Base64 或 Data URL 解码并保存为图片文件
     pub fn save_image(output_path: &str, input: &str) -> AppResult<()> {
         let parsed = parse_base64_image_input(input)?;
-        fs::write(output_path, parsed.bytes).map_err(|error| AppError::IoError(format!("保存图片文件失败: {}", error)))?;
+        fs::write(output_path, parsed.bytes)
+            .map_err(|error| AppError::IoError(format!("保存图片文件失败: {}", error)))?;
         Ok(())
     }
 }
@@ -120,7 +124,9 @@ fn parse_base64_image_input(input: &str) -> AppResult<ParsedBase64ImageInput> {
             .ok_or_else(|| AppError::InvalidData("Data URL 格式无效".to_string()))?;
 
         if !header.contains(";base64") {
-            return Err(AppError::InvalidData("仅支持 base64 编码的 Data URL".to_string()));
+            return Err(AppError::InvalidData(
+                "仅支持 base64 编码的 Data URL".to_string(),
+            ));
         }
 
         let mime = header
@@ -144,7 +150,10 @@ fn decode_image_base64(input: &str) -> AppResult<Vec<u8>> {
         .map_err(|error| AppError::InvalidData(format!("Base64 解码失败: {}", error)))
 }
 
-fn build_image_result_from_bytes(bytes: &[u8], mime_hint: Option<&str>) -> AppResult<Base64ImageResult> {
+fn build_image_result_from_bytes(
+    bytes: &[u8],
+    mime_hint: Option<&str>,
+) -> AppResult<Base64ImageResult> {
     let format = image::guess_format(bytes)
         .map_err(|error| AppError::InvalidData(format!("无法识别图片格式: {}", error)))?;
     let decoded = image::load_from_memory(bytes)
@@ -168,13 +177,41 @@ fn build_image_result_from_bytes(bytes: &[u8], mime_hint: Option<&str>) -> AppRe
 
 fn format_meta(format: image::ImageFormat, mime_hint: Option<&str>) -> (String, String, String) {
     match format {
-        image::ImageFormat::Png => ("image/png".to_string(), "png".to_string(), "png".to_string()),
-        image::ImageFormat::Jpeg => ("image/jpeg".to_string(), "jpeg".to_string(), "jpg".to_string()),
-        image::ImageFormat::WebP => ("image/webp".to_string(), "webp".to_string(), "webp".to_string()),
-        image::ImageFormat::Bmp => ("image/bmp".to_string(), "bmp".to_string(), "bmp".to_string()),
-        image::ImageFormat::Tiff => ("image/tiff".to_string(), "tiff".to_string(), "tiff".to_string()),
-        image::ImageFormat::Ico => ("image/x-icon".to_string(), "ico".to_string(), "ico".to_string()),
-        image::ImageFormat::Gif => ("image/gif".to_string(), "gif".to_string(), "gif".to_string()),
+        image::ImageFormat::Png => (
+            "image/png".to_string(),
+            "png".to_string(),
+            "png".to_string(),
+        ),
+        image::ImageFormat::Jpeg => (
+            "image/jpeg".to_string(),
+            "jpeg".to_string(),
+            "jpg".to_string(),
+        ),
+        image::ImageFormat::WebP => (
+            "image/webp".to_string(),
+            "webp".to_string(),
+            "webp".to_string(),
+        ),
+        image::ImageFormat::Bmp => (
+            "image/bmp".to_string(),
+            "bmp".to_string(),
+            "bmp".to_string(),
+        ),
+        image::ImageFormat::Tiff => (
+            "image/tiff".to_string(),
+            "tiff".to_string(),
+            "tiff".to_string(),
+        ),
+        image::ImageFormat::Ico => (
+            "image/x-icon".to_string(),
+            "ico".to_string(),
+            "ico".to_string(),
+        ),
+        image::ImageFormat::Gif => (
+            "image/gif".to_string(),
+            "gif".to_string(),
+            "gif".to_string(),
+        ),
         other => (
             mime_hint.unwrap_or("application/octet-stream").to_string(),
             format!("{:?}", other).to_lowercase(),
@@ -191,21 +228,24 @@ mod tests {
 
     #[test]
     fn test_encode_text() {
-        let result = Base64ToolService::encode("DeskForge", &Base64ProcessConfig::default()).unwrap();
+        let result =
+            Base64ToolService::encode("DeskForge", &Base64ProcessConfig::default()).unwrap();
         assert!(result.success);
         assert_eq!(result.result, "RGVza0Zvcmdl");
     }
 
     #[test]
     fn test_decode_text() {
-        let result = Base64ToolService::decode("RGVza0Zvcmdl", &Base64ProcessConfig::default()).unwrap();
+        let result =
+            Base64ToolService::decode("RGVza0Zvcmdl", &Base64ProcessConfig::default()).unwrap();
         assert!(result.success);
         assert_eq!(result.result, "DeskForge");
     }
 
     #[test]
     fn test_validate_invalid_input() {
-        let result = Base64ToolService::validate("bad@@@", &Base64ProcessConfig::default()).unwrap();
+        let result =
+            Base64ToolService::validate("bad@@@", &Base64ProcessConfig::default()).unwrap();
         assert!(!result.is_valid);
         assert!(result.error_message.is_some());
     }
@@ -236,7 +276,10 @@ mod tests {
     #[test]
     fn test_decode_image_from_data_url() {
         let bytes = sample_png_bytes();
-        let input = format!("data:image/png;base64,{}", general_purpose::STANDARD.encode(bytes));
+        let input = format!(
+            "data:image/png;base64,{}",
+            general_purpose::STANDARD.encode(bytes)
+        );
 
         let result = Base64ToolService::decode_image(&input).unwrap();
         assert_eq!(result.mime, "image/png");

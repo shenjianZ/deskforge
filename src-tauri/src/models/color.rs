@@ -2,8 +2,8 @@
 //!
 //! 定义颜色相关的数据结构，包括 RGB、HSL 和完整的颜色信息
 
-use serde::{Deserialize, Serialize};
 use crate::utils::color_conversion;
+use serde::{Deserialize, Serialize};
 
 /// 颜色信息
 ///

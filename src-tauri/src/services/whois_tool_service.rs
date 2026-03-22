@@ -75,19 +75,22 @@ impl WhoisToolService {
             return Ok(None);
         };
 
-        let mut stream = TcpStream::connect((server, 43))
-            .map_err(|error| AppError::NetworkRequestFailed(format!("WHOIS TCP 连接失败: {}", error)))?;
+        let mut stream = TcpStream::connect((server, 43)).map_err(|error| {
+            AppError::NetworkRequestFailed(format!("WHOIS TCP 连接失败: {}", error))
+        })?;
         let _ = stream.set_read_timeout(Some(Duration::from_secs(10)));
         let _ = stream.set_write_timeout(Some(Duration::from_secs(10)));
 
         stream
             .write_all(format!("{}\r\n", domain).as_bytes())
-            .map_err(|error| AppError::NetworkRequestFailed(format!("WHOIS 查询发送失败: {}", error)))?;
+            .map_err(|error| {
+                AppError::NetworkRequestFailed(format!("WHOIS 查询发送失败: {}", error))
+            })?;
 
         let mut body = String::new();
-        stream
-            .read_to_string(&mut body)
-            .map_err(|error| AppError::NetworkRequestFailed(format!("WHOIS 响应读取失败: {}", error)))?;
+        stream.read_to_string(&mut body).map_err(|error| {
+            AppError::NetworkRequestFailed(format!("WHOIS 响应读取失败: {}", error))
+        })?;
 
         if body.trim().is_empty() {
             return Ok(None);
@@ -133,7 +136,9 @@ impl WhoisToolService {
         let client = Client::builder()
             .timeout(Duration::from_secs(10))
             .build()
-            .map_err(|error| AppError::NetworkRequestFailed(format!("HTTP 客户端创建失败: {}", error)))?;
+            .map_err(|error| {
+                AppError::NetworkRequestFailed(format!("HTTP 客户端创建失败: {}", error))
+            })?;
 
         let candidates = Self::build_domain_candidates(&domain);
         let mut last_error: Option<String> = None;
@@ -144,12 +149,13 @@ impl WhoisToolService {
                 .header("accept", "application/rdap+json, application/json")
                 .send()
                 .await
-                .map_err(|error| AppError::NetworkRequestFailed(format!("WHOIS 查询失败: {}", error)))?;
+                .map_err(|error| {
+                    AppError::NetworkRequestFailed(format!("WHOIS 查询失败: {}", error))
+                })?;
 
-            let body = response
-                .text()
-                .await
-                .map_err(|error| AppError::NetworkRequestFailed(format!("读取 WHOIS 响应失败: {}", error)))?;
+            let body = response.text().await.map_err(|error| {
+                AppError::NetworkRequestFailed(format!("读取 WHOIS 响应失败: {}", error))
+            })?;
 
             let trimmed = body.trim_start();
             if !(trimmed.starts_with('{') || trimmed.starts_with('[')) {

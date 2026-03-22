@@ -23,8 +23,7 @@ impl DnsLookupToolService {
         }
 
         if trimmed.contains("://") {
-            let url = Url::parse(trimmed)
-                .map_err(|error| format!("URL 解析失败: {}", error))?;
+            let url = Url::parse(trimmed).map_err(|error| format!("URL 解析失败: {}", error))?;
             let host = url
                 .host_str()
                 .ok_or_else(|| "URL 中缺少有效主机名".to_string())?;
@@ -78,7 +77,9 @@ impl DnsLookupToolService {
         let client = Client::builder()
             .timeout(Duration::from_secs(8))
             .build()
-            .map_err(|error| AppError::NetworkRequestFailed(format!("HTTP 客户端创建失败: {}", error)))?;
+            .map_err(|error| {
+                AppError::NetworkRequestFailed(format!("HTTP 客户端创建失败: {}", error))
+            })?;
 
         let response = client
             .get("https://dns.google/resolve")
@@ -90,10 +91,9 @@ impl DnsLookupToolService {
             .await
             .map_err(|error| AppError::NetworkRequestFailed(format!("DNS 查询失败: {}", error)))?;
 
-        let body = response
-            .text()
-            .await
-            .map_err(|error| AppError::NetworkRequestFailed(format!("读取 DNS 响应失败: {}", error)))?;
+        let body = response.text().await.map_err(|error| {
+            AppError::NetworkRequestFailed(format!("读取 DNS 响应失败: {}", error))
+        })?;
 
         dns_lookup_tool::parse_dns_lookup_response(&domain, config.record_type.as_str(), &body)
     }

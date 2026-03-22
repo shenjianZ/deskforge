@@ -11,8 +11,10 @@ use tauri::{
 // 模块声明
 mod commands;
 mod error;
+mod infra;
 mod models;
 mod platforms;
+mod repository;
 mod services;
 mod utils;
 
@@ -47,6 +49,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             None,
@@ -62,7 +65,8 @@ pub fn run() {
         .setup(|app| {
             let show_item = MenuItemBuilder::with_id(SHOW_MENU_ID, "显示主窗口").build(app)?;
             let hide_item = MenuItemBuilder::with_id(HIDE_MENU_ID, "隐藏窗口").build(app)?;
-            let toggle_item = MenuItemBuilder::with_id(TOGGLE_MENU_ID, "切换显示/隐藏").build(app)?;
+            let toggle_item =
+                MenuItemBuilder::with_id(TOGGLE_MENU_ID, "切换显示/隐藏").build(app)?;
             let quit_item = MenuItemBuilder::with_id(QUIT_MENU_ID, "退出应用").build(app)?;
             app.manage(TrayMenuState {
                 show_item: show_item.clone(),
@@ -90,14 +94,12 @@ pub fn run() {
                         toggle_main_window(tray.app_handle());
                     }
                 })
-                .on_menu_event(|app, event| {
-                    match event.id().as_ref() {
-                        SHOW_MENU_ID => show_main_window(app),
-                        HIDE_MENU_ID => hide_main_window(app),
-                        TOGGLE_MENU_ID => toggle_main_window(app),
-                        QUIT_MENU_ID => app.exit(0),
-                        _ => {}
-                    }
+                .on_menu_event(|app, event| match event.id().as_ref() {
+                    SHOW_MENU_ID => show_main_window(app),
+                    HIDE_MENU_ID => hide_main_window(app),
+                    TOGGLE_MENU_ID => toggle_main_window(app),
+                    QUIT_MENU_ID => app.exit(0),
+                    _ => {}
                 });
 
             if let Some(icon) = app.default_window_icon().cloned() {
@@ -114,6 +116,10 @@ pub fn run() {
             if let Err(error) = utils::shortcut::register_global_shortcuts(app) {
                 eprintln!("全局快捷键注册失败，将继续启动应用: {}", error);
             }
+
+            let scheduler_state =
+                services::scheduler_service::SchedulerService::initialize(app.handle())?;
+            app.manage(scheduler_state);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -150,6 +156,16 @@ pub fn run() {
             commands::window_commands::show_window,
             commands::window_commands::get_main_window_state,
             commands::window_commands::toggle_maximize_main_window,
+            // 定时中心命令
+            commands::scheduler_commands::list_scheduler_tasks,
+            commands::scheduler_commands::create_scheduler_task,
+            commands::scheduler_commands::update_scheduler_task,
+            commands::scheduler_commands::delete_scheduler_task,
+            commands::scheduler_commands::toggle_scheduler_task,
+            commands::scheduler_commands::list_scheduler_logs,
+            commands::scheduler_commands::delete_scheduler_log,
+            commands::scheduler_commands::clear_scheduler_logs,
+            commands::scheduler_commands::run_scheduler_task_now,
             // 取色器命令
             commands::picker_color_commands::rgb_to_hsl,
             commands::picker_color_commands::start_color_picker,
@@ -194,5 +210,3 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("运行 Tauri 应用时出错");
 }
-
-

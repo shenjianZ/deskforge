@@ -114,7 +114,10 @@ pub fn parse_whois_response(domain: &str, body: &str) -> Result<WhoisLookupResul
         success: true,
         domain: domain.to_string(),
         registrar: extract_registrar_name(&value),
-        handle: value.get("handle").and_then(Value::as_str).map(ToOwned::to_owned),
+        handle: value
+            .get("handle")
+            .and_then(Value::as_str)
+            .map(ToOwned::to_owned),
         statuses,
         nameservers,
         events,
@@ -138,7 +141,11 @@ fn collect_fields(body: &str, keys: &[&str]) -> Vec<String> {
     let mut values = BTreeSet::new();
     for line in body.lines() {
         for key in keys {
-            if let Some(value) = line.strip_prefix(key).map(str::trim).filter(|value| !value.is_empty()) {
+            if let Some(value) = line
+                .strip_prefix(key)
+                .map(str::trim)
+                .filter(|value| !value.is_empty())
+            {
                 values.insert(value.to_string());
             }
         }
@@ -171,9 +178,18 @@ pub fn parse_raw_whois_response(domain: &str, body: &str) -> WhoisLookupResult {
 
     let mut events = Vec::new();
     for (action, keys) in [
-        ("registration", vec!["Registration Time:", "Creation Date:", "Created On:"]),
-        ("expiration", vec!["Expiration Time:", "Registry Expiry Date:", "Expiry Date:"]),
-        ("last changed", vec!["Updated Date:", "Updated Time:", "Last Updated On:"]),
+        (
+            "registration",
+            vec!["Registration Time:", "Creation Date:", "Created On:"],
+        ),
+        (
+            "expiration",
+            vec!["Expiration Time:", "Registry Expiry Date:", "Expiry Date:"],
+        ),
+        (
+            "last changed",
+            vec!["Updated Date:", "Updated Time:", "Last Updated On:"],
+        ),
     ] {
         if let Some(date) = find_first_field(body, &keys) {
             events.push(WhoisEventInfo {

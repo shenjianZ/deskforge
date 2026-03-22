@@ -12,9 +12,9 @@
 //! 使用透明全屏遮罩 + CSS 光标，完美解决 Windows 系统光标竞争问题，
 //! 避免了传统的 SetCursor API 与系统的 race condition。
 
+use serde::Serialize;
 use std::thread;
 use std::time::Duration;
-use serde::Serialize;
 use tauri::{AppHandle, Manager};
 
 use crate::services::window_service::WindowService;
@@ -199,8 +199,7 @@ pub async fn close_picker_window(app: AppHandle) -> Result<(), String> {
             .map_err(|e| format!("隐藏取色器窗口失败: {}", e))?;
 
         // 恢复主窗口
-        WindowService::show_main_window(&app)
-            .map_err(|e| format!("显示主窗口失败: {}", e))?;
+        WindowService::show_main_window(&app).map_err(|e| format!("显示主窗口失败: {}", e))?;
     }
     Ok(())
 }
@@ -220,8 +219,8 @@ pub async fn pick_color_at_point(
     x: i32,
     y: i32,
 ) -> Result<crate::models::color::ColorInfo, String> {
-    let (r, g, b) = crate::utils::screen::WindowsScreen::get_pixel_color(x, y)
-        .map_err(|e| e.to_string())?;
+    let (r, g, b) =
+        crate::utils::screen::WindowsScreen::get_pixel_color(x, y).map_err(|e| e.to_string())?;
 
     Ok(crate::models::color::ColorInfo::new(r, g, b, x, y))
 }
@@ -246,8 +245,8 @@ pub async fn pick_color_at_point_topmost(
     // 给桌面合成一点时间刷新（过短可能还会读到遮罩叠加结果）
     thread::sleep(Duration::from_millis(35));
 
-    let (r, g, b) = crate::utils::screen::WindowsScreen::get_pixel_color(x, y)
-        .map_err(|e| e.to_string())?;
+    let (r, g, b) =
+        crate::utils::screen::WindowsScreen::get_pixel_color(x, y).map_err(|e| e.to_string())?;
 
     Ok(crate::models::color::ColorInfo::new(r, g, b, x, y))
 }

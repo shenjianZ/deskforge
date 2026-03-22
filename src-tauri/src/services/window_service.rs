@@ -3,10 +3,7 @@
 //! 提供主窗口显示状态编排，统一快捷键、托盘和标题栏按钮行为。
 
 use serde::Serialize;
-use tauri::{
-    menu::MenuItem,
-    AppHandle, Manager, Runtime, WebviewWindow,
-};
+use tauri::{menu::MenuItem, AppHandle, Manager, Runtime, WebviewWindow};
 
 use crate::error::{AppError, AppResult};
 
@@ -37,9 +34,8 @@ pub struct WindowService;
 
 impl WindowService {
     fn main_window<R: Runtime>(app: &AppHandle<R>) -> AppResult<WebviewWindow<R>> {
-        app.get_webview_window("main").ok_or_else(|| {
-            AppError::WindowOperationFailed("未找到主窗口".to_string())
-        })
+        app.get_webview_window("main")
+            .ok_or_else(|| AppError::WindowOperationFailed("未找到主窗口".to_string()))
     }
 
     fn map_window_error<T>(result: tauri::Result<T>) -> AppResult<T> {
@@ -127,4 +123,3 @@ impl WindowService {
         }
     }
 }
-

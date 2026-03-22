@@ -2,13 +2,9 @@
 //!
 //! 提供时间戳与日期时间双向转换算法
 
-use chrono::{
-    DateTime, FixedOffset, Local, LocalResult, NaiveDate, NaiveDateTime, TimeZone, Utc,
-};
+use chrono::{DateTime, FixedOffset, Local, LocalResult, NaiveDate, NaiveDateTime, TimeZone, Utc};
 
-use crate::models::datetime_tool::{
-    DateTimeOutputFormat, DateTimeToolConfig, TimestampUnit,
-};
+use crate::models::datetime_tool::{DateTimeOutputFormat, DateTimeToolConfig, TimestampUnit};
 
 fn format_date_time(
     utc_time: DateTime<Utc>,
@@ -18,13 +14,17 @@ fn format_date_time(
     let target_text = if config.use_utc {
         match config.output_format {
             DateTimeOutputFormat::Iso8601 => utc_time.to_rfc3339(),
-            DateTimeOutputFormat::LocalDateTime => utc_time.format("%Y-%m-%d %H:%M:%S UTC").to_string(),
+            DateTimeOutputFormat::LocalDateTime => {
+                utc_time.format("%Y-%m-%d %H:%M:%S UTC").to_string()
+            }
             DateTimeOutputFormat::Rfc2822 => utc_time.to_rfc2822(),
         }
     } else {
         match config.output_format {
             DateTimeOutputFormat::Iso8601 => local_time.to_rfc3339(),
-            DateTimeOutputFormat::LocalDateTime => local_time.format("%Y-%m-%d %H:%M:%S %:z").to_string(),
+            DateTimeOutputFormat::LocalDateTime => {
+                local_time.format("%Y-%m-%d %H:%M:%S %:z").to_string()
+            }
             DateTimeOutputFormat::Rfc2822 => local_time.to_rfc2822(),
         }
     };
@@ -75,8 +75,9 @@ fn to_utc_datetime(input: &str, config: &DateTimeToolConfig) -> Result<DateTime<
         return Ok(value.with_timezone(&Utc));
     }
 
-    let naive = parse_naive_datetime(input)
-        .ok_or_else(|| "无法识别日期时间格式，支持 YYYY-MM-DD、YYYY-MM-DD HH:mm:ss、ISO 8601 等格式".to_string())?;
+    let naive = parse_naive_datetime(input).ok_or_else(|| {
+        "无法识别日期时间格式，支持 YYYY-MM-DD、YYYY-MM-DD HH:mm:ss、ISO 8601 等格式".to_string()
+    })?;
 
     if config.use_utc {
         return Ok(Utc.from_utc_datetime(&naive));
@@ -105,7 +106,11 @@ pub fn timestamp_to_datetime(input: &str, config: &DateTimeToolConfig) -> Result
             .ok_or_else(|| "时间戳超出可处理范围".to_string())?,
     };
 
-    Ok(format_date_time(utc_time, utc_time.with_timezone(&Local), config))
+    Ok(format_date_time(
+        utc_time,
+        utc_time.with_timezone(&Local),
+        config,
+    ))
 }
 
 /// 将日期时间转换为时间戳

@@ -6,6 +6,7 @@ import { Home } from "@/pages/Home";
 import { Search } from "@/pages/Search";
 import Settings from "@/pages/Settings";
 import { CommandPalette } from "@/components/command-palette/CommandPalette";
+import { AppReminderCenter } from "@/components/scheduler/AppReminderCenter";
 import { ColorPickerPage } from "@/components/features/ColorPicker/ColorPickerPage";
 import { JsonFormatterPage } from "@/components/features/JsonFormatter/JsonFormatterPage";
 import { HtmlFormatterPage } from "@/components/features/HtmlFormatter/HtmlFormatterPage";
@@ -27,6 +28,7 @@ import { ImageResizerPage } from "@/components/features/ImageResizer/ImageResize
 import { MarkdownPreviewPage } from "@/components/features/MarkdownPreview/MarkdownPreviewPage";
 import { RegexTesterPage } from "@/components/features/RegexTester/RegexTesterPage";
 import { GeneratorHubPage } from "@/components/features/GeneratorHub/GeneratorHubPage";
+import { SchedulerCenterPage } from "@/components/features/SchedulerCenter/SchedulerCenterPage";
 
 function App() {
   return (
@@ -34,6 +36,7 @@ function App() {
       <div className="min-h-screen">
         <ScrollToTop />
         <CommandPalette />
+        <AppReminderCenter />
 
         <AppShell>
           <Routes>
@@ -59,6 +62,7 @@ function App() {
             <Route path="/feature/regex-tester" element={<RegexTesterPage />} />
             <Route path="/feature/generator-hub" element={<GeneratorHubPage />} />
             <Route path="/feature/system-info" element={<SystemInfoPage />} />
+            <Route path="/feature/scheduler-center" element={<SchedulerCenterPage />} />
             <Route path="/feature/qr-generator" element={<QrCodeGeneratorPage />} />
             <Route path="/feature/api-debugger" element={<ApiDebuggerPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
