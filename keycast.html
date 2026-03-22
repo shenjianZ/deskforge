@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>按键屏显</title>
+    <style>
+      html,body{margin:0;background:transparent;overflow:hidden}
+      body{display:inline-block;padding:28px;pointer-events:none;font-family:"Segoe UI","Microsoft YaHei",sans-serif}
+      #wrap{display:inline-block;opacity:0;transform:translateY(12px);transition:opacity .18s ease,transform .18s ease}
+      #wrap.visible{opacity:1;transform:translateY(0)}
+      #card{min-width:0;max-width:min(72vw,760px);padding:0;border-radius:24px}
+      #text{font-size:30px;font-weight:800;line-height:1.12;word-break:break-word}
+      #tokens{display:none;flex-wrap:wrap;gap:10px}
+      .token{padding:10px 14px;border-radius:18px;font-size:22px;font-weight:700;line-height:1}
+      body{--fg:#fff;--muted:rgba(148,163,184,.82);--accent:#38bdf8;--token-bg:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.08));--token-line:rgba(255,255,255,.1);--token-fg:#fff}
+      #card{color:var(--fg);background:transparent;border:none;box-shadow:none;backdrop-filter:none}
+      #accent{display:none;width:84px;height:5px;border-radius:999px;background:var(--accent);box-shadow:0 0 24px rgba(255,255,255,.18);margin-bottom:10px}
+      .text-mode #text{display:block}
+      .text-mode #tokens{display:none}
+      .token-mode #text{display:none}
+      .token-mode #tokens{display:flex}
+      .token{color:var(--token-fg);background:var(--token-bg);border:1px solid var(--token-line);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 12px 24px rgba(15,23,42,.18)}
+      .text-mode[data-theme^="broadcast"] #accent,.text-mode[data-theme="terminal"] #accent,.text-mode[data-theme="neon-cyan"] #accent{display:block}
+      [data-theme="keycaps-dark"]{--accent:#38bdf8}
+      [data-theme="keycaps-light"]{--fg:#0f172a;--muted:rgba(71,85,105,.8);--token-bg:linear-gradient(180deg,#fff,#e2e8f0);--token-line:rgba(148,163,184,.4);--token-fg:#0f172a}
+      [data-theme="broadcast-orange"]{--accent:#fb923c}
+      [data-theme="broadcast-green"]{--accent:#34d399}
+      [data-theme="minimal-light"]{--fg:#111827;--muted:rgba(75,85,99,.72)}
+      [data-theme="glass-soft"]{--fg:#e2e8f0;--muted:rgba(226,232,240,.72)}
+      [data-theme="fresh-mint"]{--fg:#064e3b;--muted:rgba(6,95,70,.7)}
+      [data-theme="sky-card"]{--fg:#082f49;--muted:rgba(3,105,161,.66)}
+      [data-theme="terminal"]{--fg:#86efac;--muted:rgba(134,239,172,.7);--accent:#4ade80}
+      [data-theme="neon-cyan"]{--fg:#cffafe;--muted:rgba(165,243,252,.7);--accent:#22d3ee}
+      [data-theme="paper-card"]{--fg:#44403c;--muted:rgba(120,113,108,.72)}
+    </style>
+  </head>
+  <body>
+    <div id="wrap">
+        <div id="card">
+          <div>
+            <div id="accent"></div>
+            <div id="text">Ready</div>
+            <div id="tokens"></div>
+          </div>
+        </div>
+    </div>
+    <script type="module">
+      import { invoke } from "@tauri-apps/api/core";
+      import { listen } from "@tauri-apps/api/event";
+      import { LogicalSize, getCurrentWindow } from "@tauri-apps/api/window";
+      const currentWindow = getCurrentWindow();
+      const wrap = document.getElementById("wrap");
+      const text = document.getElementById("text");
+      const tokens = document.getElementById("tokens");
+      const FIXED_WINDOW_WIDTH = 350;
+      let hideTimer = 0;
+      const tokenThemes = new Set(["keycaps-dark", "keycaps-light"]);
+      function applyTheme(theme) {
+        const nextTheme = theme || "keycaps-dark";
+        document.body.dataset.theme = nextTheme;
+        document.body.classList.toggle("token-mode", tokenThemes.has(nextTheme));
+        document.body.classList.toggle("text-mode", !tokenThemes.has(nextTheme));
+      }
+      function renderTokens(content) {
+        tokens.innerHTML = "";
+        content.split(" + ").filter(Boolean).forEach((key) => {
+          const item = document.createElement("span");
+          item.className = "token";
+          item.textContent = key;
+          tokens.appendChild(item);
+        });
+      }
+      async function syncWindowSize() {
+        await new Promise((resolve) => window.requestAnimationFrame(resolve));
+        const rect = wrap.getBoundingClientRect();
+        const width = Math.max(FIXED_WINDOW_WIDTH, Math.ceil(rect.width + 56));
+        const height = Math.ceil(rect.height + 56);
+        await currentWindow.setSize(new LogicalSize(width, height));
+      }
+      async function show(content) {
+        text.textContent = content;
+        renderTokens(content);
+        await syncWindowSize();
+        wrap.classList.add("visible");
+        window.clearTimeout(hideTimer);
+        await currentWindow.show();
+        hideTimer = window.setTimeout(() => {
+          wrap.classList.remove("visible");
+          void currentWindow.hide();
+        }, 1500);
+      }
+      window.setTimeout(() => {
+        invoke("get_keycast_overlay_config").then((config) => applyTheme(config.theme)).catch(() => {});
+        listen("keycast:config-updated", (event) => {
+          if (event.payload?.theme) applyTheme(event.payload.theme);
+        });
+        listen("keycast:display", (event) => {
+          if (event.payload?.text) void show(event.payload.text);
+        });
+      }, 0);
+    </script>
+  </body>
+</html>

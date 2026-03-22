@@ -28,6 +28,7 @@ import { ImageResizerPage } from "@/components/features/ImageResizer/ImageResize
 import { MarkdownPreviewPage } from "@/components/features/MarkdownPreview/MarkdownPreviewPage";
 import { RegexTesterPage } from "@/components/features/RegexTester/RegexTesterPage";
 import { GeneratorHubPage } from "@/components/features/GeneratorHub/GeneratorHubPage";
+import { KeycastPage } from "@/components/features/Keycast/KeycastPage";
 import { SchedulerCenterPage } from "@/components/features/SchedulerCenter/SchedulerCenterPage";
 
 function App() {
@@ -61,6 +62,7 @@ function App() {
             <Route path="/feature/markdown-preview" element={<MarkdownPreviewPage />} />
             <Route path="/feature/regex-tester" element={<RegexTesterPage />} />
             <Route path="/feature/generator-hub" element={<GeneratorHubPage />} />
+            <Route path="/feature/keycast" element={<KeycastPage />} />
             <Route path="/feature/system-info" element={<SystemInfoPage />} />
             <Route path="/feature/scheduler-center" element={<SchedulerCenterPage />} />
             <Route path="/feature/qr-generator" element={<QrCodeGeneratorPage />} />

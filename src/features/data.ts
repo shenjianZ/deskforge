@@ -104,6 +104,16 @@ export const featuresData: Feature[] = [
     implemented: true,
   },
   {
+    id: 'keycast',
+    name: '按键屏显',
+    description: '在屏幕右下角实时显示全局按键操作，支持组合键展示',
+    icon: 'Keyboard',
+    category: 'system',
+    route: '/feature/keycast',
+    tags: ['按键', '键盘', 'keycast', 'shortcut', 'hotkey', '组合键', '录屏'],
+    implemented: true,
+  },
+  {
     id: 'scheduler-center',
     name: '定时中心',
     description: '创建本地提醒任务，支持一次性、每日、每周与倒计时规则',

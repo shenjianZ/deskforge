@@ -21,6 +21,7 @@ export default defineConfig(async () => ({
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, "index.html"),
+        keycast: path.resolve(__dirname, "keycast.html"),
         picker: path.resolve(__dirname, "picker.html"),
       },
     },

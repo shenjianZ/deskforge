@@ -117,6 +117,9 @@ pub fn run() {
                 eprintln!("全局快捷键注册失败，将继续启动应用: {}", error);
             }
 
+            let keycast_runtime = services::keycast_service::KeycastRuntime::default();
+            services::keycast_service::KeycastService::initialize(app.handle(), &keycast_runtime)?;
+            app.manage(keycast_runtime);
             let scheduler_state =
                 services::scheduler_service::SchedulerService::initialize(app.handle())?;
             app.manage(scheduler_state);
@@ -173,6 +176,12 @@ pub fn run() {
             commands::picker_color_commands::pick_color_at_point,
             commands::picker_color_commands::pick_color_at_point_topmost,
             commands::picker_color_commands::capture_screen_region_rgba,
+            commands::keycast_commands::start_keycast,
+            commands::keycast_commands::stop_keycast,
+            commands::keycast_commands::get_keycast_state,
+            commands::keycast_commands::get_keycast_overlay_config,
+            commands::keycast_commands::prewarm_keycast_overlay,
+            commands::keycast_commands::update_keycast_overlay_config,
             // JSON 格式化命令
             commands::json_format_commands::format_json,
             commands::json_format_commands::validate_json,

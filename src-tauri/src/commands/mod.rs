@@ -11,6 +11,7 @@ pub mod generator_commands;
 pub mod html_format_commands;
 pub mod image_converter_commands;
 pub mod json_format_commands;
+pub mod keycast_commands;
 pub mod markdown_preview_commands;
 pub mod picker_color_commands;
 pub mod public_ip_tool_commands;
