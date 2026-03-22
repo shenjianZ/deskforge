@@ -47,6 +47,8 @@ pub struct KeycastOverlayConfig {
     pub y: f64,
     #[serde(default = "default_combo_window_ms")]
     pub combo_window_ms: i64,
+    #[serde(default = "default_text_color")]
+    pub text_color: String,
     #[serde(default = "default_keycast_theme")]
     pub theme: String,
 }
@@ -68,6 +70,7 @@ impl Default for KeycastOverlayConfig {
             x: 24.0,
             y: 24.0,
             combo_window_ms: default_combo_window_ms(),
+            text_color: default_text_color(),
             theme: "keycaps-dark".to_string(),
         }
     }
@@ -79,6 +82,10 @@ fn default_combo_window_ms() -> i64 {
 
 fn default_keycast_theme() -> String {
     "keycaps-dark".to_string()
+}
+
+fn default_text_color() -> String {
+    "".to_string()
 }
 
 pub struct KeycastService;
@@ -499,8 +506,8 @@ impl KeycastService {
     }
 
     fn normalize_overlay_config(mut config: KeycastOverlayConfig) -> KeycastOverlayConfig {
-        config.combo_window_ms =
-            config.combo_window_ms.clamp(100, 2000);
+        config.combo_window_ms = config.combo_window_ms.clamp(100, 2000);
+        config.text_color = config.text_color.trim().to_string();
         if !matches!(
             config.theme.as_str(),
             "keycaps-dark"

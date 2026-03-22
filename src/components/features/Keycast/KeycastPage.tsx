@@ -22,6 +22,7 @@ interface KeycastOverlayConfig {
   x: number;
   y: number;
   combo_window_ms: number;
+  text_color: string;
   theme: KeycastTheme;
 }
 
@@ -93,19 +94,19 @@ function KeycastThemePreview({ theme, text, active }: { theme: KeycastTheme; tex
     "bg-current/0";
   if (mode === "text") {
     return (
-      <div className={cn("rounded-3xl border p-4 shadow-lg transition", getThemeClasses(theme, active), theme === "glass-soft" && "backdrop-blur-xl")}>
+      <div className={cn("min-w-0 rounded-3xl border p-3 shadow-lg transition sm:p-4", getThemeClasses(theme, active), theme === "glass-soft" && "backdrop-blur-xl")}>
         <div className={cn("mb-3 h-1.5 w-20 rounded-full", accent)} />
-        <div className="text-[10px] uppercase tracking-[0.32em] opacity-60">Keycast Theme</div>
-        <div className={cn("mt-3 tracking-tight", theme.startsWith("broadcast") ? "text-2xl font-black" : "text-2xl font-semibold")}>{text}</div>
+        <div className="text-[10px] uppercase tracking-[0.24em] opacity-60">Keycast Theme</div>
+        <div className={cn("mt-3 break-words tracking-tight", theme.startsWith("broadcast") ? "text-xl font-black sm:text-2xl" : "text-xl font-semibold sm:text-2xl")}>{text}</div>
       </div>
     );
   }
   return (
-    <div className={cn("rounded-3xl border p-4 shadow-lg transition", getThemeClasses(theme, active))}>
-      <div className="mb-3 text-[10px] uppercase tracking-[0.32em] opacity-60">Keycaps Theme</div>
+    <div className={cn("min-w-0 rounded-3xl border p-3 shadow-lg transition sm:p-4", getThemeClasses(theme, active))}>
+      <div className="mb-3 text-[10px] uppercase tracking-[0.24em] opacity-60">Keycaps Theme</div>
       <div className="flex flex-wrap items-center gap-2">
         {keys.map((key) => (
-          <span key={`${theme}-${key}`} className={cn("rounded-2xl px-3 py-2 text-lg font-semibold shadow-inner", theme === "keycaps-light" ? "border border-slate-200 bg-white text-slate-900" : "border border-white/10 bg-white/10 text-white")}>
+          <span key={`${theme}-${key}`} className={cn("rounded-2xl px-2.5 py-1.5 text-base font-semibold shadow-inner sm:px-3 sm:py-2 sm:text-lg", theme === "keycaps-light" ? "border border-slate-200 bg-white text-slate-900" : "border border-white/10 bg-white/10 text-white")}>
             {key}
           </span>
         ))}
@@ -121,6 +122,7 @@ export function KeycastPage() {
     x: 24,
     y: 24,
     combo_window_ms: 500,
+    text_color: "",
     theme: "keycaps-dark",
   });
 
@@ -151,6 +153,10 @@ export function KeycastPage() {
   };
 
   const updateField = (key: keyof KeycastOverlayConfig, value: string) => {
+    if (key === "text_color") {
+      setConfig((current) => ({ ...current, text_color: value }));
+      return;
+    }
     const parsed = Number(value);
     setConfig((current) => ({ ...current, [key]: Number.isFinite(parsed) ? parsed : 0 }));
   };
@@ -160,13 +166,13 @@ export function KeycastPage() {
   };
 
   return (
-    <PageSection className="max-w-5xl space-y-6">
+    <PageSection className="max-w-5xl space-y-4">
       <PageHeader title="按键屏显" backTo="/" />
       <Card className="border-border/60 bg-card/85 shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Keyboard className="h-5 w-5" />全局按键悬浮显示</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-4 px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
           <div className="flex flex-wrap items-center gap-3">
             <Button onClick={() => void toggle()} className="gap-2">
               {state.is_listening ? <Square className="h-4 w-4" /> : <Radio className="h-4 w-4" />}
@@ -176,39 +182,53 @@ export function KeycastPage() {
               {state.is_listening ? "监听中，按键时会在设定坐标显示悬浮提示" : "未监听"}
             </div>
           </div>
-          <div className="rounded-2xl border border-border/60 bg-background/70 p-5">
+          <div className="rounded-2xl border border-border/60 bg-background/70 p-4 sm:p-5">
             <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Latest</div>
-            <div className="mt-3 text-3xl font-semibold tracking-tight">{lastText}</div>
+            <div className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{lastText}</div>
           </div>
-          <div className="rounded-2xl border border-border/60 bg-background/70 p-5">
+          <div className="rounded-2xl border border-border/60 bg-background/70 p-4 sm:p-5">
             <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Themes</div>
-            <div className="mt-4 grid gap-3 lg:grid-cols-3">
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {KEYCAST_THEME_OPTIONS.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => updateTheme(option.value)}
-                  className={cn("rounded-[28px] p-1 text-left transition", config.theme === option.value ? "ring-2 ring-primary/70" : "ring-1 ring-border/50")}
+                  className={cn("min-w-0 rounded-[28px] p-1 text-left transition", config.theme === option.value ? "ring-2 ring-primary/70" : "ring-1 ring-border/50")}
                 >
                   <KeycastThemePreview theme={option.value} text={lastText} active={config.theme === option.value} />
-                  <div className="px-2 pb-2 pt-3">
-                    <div className="text-sm font-semibold">{option.label}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">{option.description}</div>
+                  <div className="min-w-0 px-2 pb-2 pt-3">
+                    <div className="truncate text-sm font-semibold">{option.label}</div>
+                    <div className="mt-1 break-words text-xs text-muted-foreground">{option.description}</div>
                   </div>
                 </button>
               ))}
             </div>
           </div>
-          <div className="rounded-2xl border border-border/60 bg-background/70 p-5">
+          <div className="rounded-2xl border border-border/60 bg-background/70 p-4 sm:p-5">
             <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Overlay</div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="mt-4 grid gap-3 lg:grid-cols-4">
               <Input value={config.x} type="number" onChange={(event) => updateField("x", event.target.value)} placeholder="X" />
               <Input value={config.y} type="number" onChange={(event) => updateField("y", event.target.value)} placeholder="Y" />
               <Input value={config.combo_window_ms} type="number" onChange={(event) => updateField("combo_window_ms", event.target.value)} placeholder="组合键间隔(ms)" />
+              <div className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2">
+                <input
+                  value={config.text_color || "#ffffff"}
+                  type="color"
+                  onChange={(event) => updateField("text_color", event.target.value)}
+                  className="h-6 w-8 rounded border-0 bg-transparent p-0"
+                />
+                <Input
+                  value={config.text_color}
+                  onChange={(event) => updateField("text_color", event.target.value)}
+                  placeholder="文字颜色，例如 #ffffff"
+                  className="h-auto border-0 bg-transparent px-0 py-0 shadow-none focus-visible:ring-0"
+                />
+              </div>
             </div>
             <div className="mt-4 flex items-center gap-3">
               <Button variant="outline" onClick={() => void applyOverlayConfig()}>应用设置</Button>
-              <div className="text-sm text-muted-foreground">设置显示坐标和组合键判定间隔，单位为逻辑像素和毫秒。</div>
+              <div className="text-sm text-muted-foreground">设置显示坐标、组合键间隔和统一文字颜色。</div>
             </div>
           </div>
           <div className="space-y-2 text-sm text-muted-foreground">

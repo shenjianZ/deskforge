@@ -58,11 +58,19 @@
       const DEFAULT_ACCENT_WIDTH = 84;
       let hideTimer = 0;
       const tokenThemes = new Set(["keycaps-dark", "keycaps-light"]);
-      function applyTheme(theme) {
-        const nextTheme = theme || "keycaps-dark";
+      function applyTheme(config) {
+        const nextTheme = config?.theme || "keycaps-dark";
+        const textColor = (config?.text_color || "").trim();
         document.body.dataset.theme = nextTheme;
         document.body.classList.toggle("token-mode", tokenThemes.has(nextTheme));
         document.body.classList.toggle("text-mode", !tokenThemes.has(nextTheme));
+        if (textColor) {
+          document.body.style.setProperty("--fg", textColor);
+          document.body.style.setProperty("--token-fg", textColor);
+          return;
+        }
+        document.body.style.removeProperty("--fg");
+        document.body.style.removeProperty("--token-fg");
       }
       function renderTokens(content) {
         tokens.innerHTML = "";
@@ -100,9 +108,9 @@
         }, 1500);
       }
       window.setTimeout(() => {
-        invoke("get_keycast_overlay_config").then((config) => applyTheme(config.theme)).catch(() => {});
+        invoke("get_keycast_overlay_config").then((config) => applyTheme(config)).catch(() => {});
         listen("keycast:config-updated", (event) => {
-          if (event.payload?.theme) applyTheme(event.payload.theme);
+          if (event.payload) applyTheme(event.payload);
         });
         listen("keycast:display", (event) => {
           if (event.payload?.text) void show(event.payload.text);
